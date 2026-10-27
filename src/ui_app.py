@@ -58,9 +58,10 @@ CATEGORIES = [
 ]
 
 BG_MODE_MAP = {
-    "Recorte Inteligente IA (rembg) sobre Blanco (#FFFFFF)": "rembg_ai_white",
-    "Aislamiento Específico de Barandilla Metal (Sin Revestimiento/Escalera)": "railing_metal_isolate_white",
-    "Encuadre Estudio sobre Fondo Blanco (#FFFFFF)": "studio_frame_white",
+    "🌟 Catálogo Estudio Pro (Fondo Blanco Puro #FFFFFF - Recomendado)": "studio_catalog_render",
+    "🛠️ Aislamiento de Barandilla Metal (Sin Escalones/Revestimiento)": "railing_metal_isolate_white",
+    "🤖 Recorte Automático IA (rembg)": "rembg_ai_white",
+    "🖼️ Encuadre Estudio sobre Blanco": "studio_frame_white",
 }
 
 PRICING_MODE_MAP = {
