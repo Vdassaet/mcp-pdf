@@ -173,6 +173,35 @@ function bindEvents() {
     });
   }
 
+  const btnAddExtra = document.getElementById("btnAddExtraSpec");
+  if (btnAddExtra) {
+    btnAddExtra.addEventListener("click", () => {
+      addExtraSpecRow();
+    });
+  }
+
+  const specMat = document.getElementById("specMaterial");
+  const prodMat = document.getElementById("prodMaterial");
+  if (specMat && prodMat) {
+    specMat.addEventListener("input", () => {
+      if (specMat.value) prodMat.value = specMat.value;
+    });
+    prodMat.addEventListener("input", () => {
+      if (prodMat.value && !specMat.value) specMat.value = prodMat.value;
+    });
+  }
+
+  const specFin = document.getElementById("specFinish");
+  const prodFin = document.getElementById("prodFinish");
+  if (specFin && prodFin) {
+    specFin.addEventListener("input", () => {
+      if (specFin.value) prodFin.value = specFin.value;
+    });
+    prodFin.addEventListener("input", () => {
+      if (prodFin.value && !specFin.value) specFin.value = prodFin.value;
+    });
+  }
+
   document.getElementById("btnAnalyzeGemini").addEventListener("click", () => {
     analyzeCurrentImageWithGemini();
   });
@@ -365,7 +394,7 @@ async function analyzeCurrentImageWithGemini() {
       "Analyze ONLY what is visually present in this railing/fence photograph. " +
       "CRITICAL RULE 1: NEVER invent, guess, or mention any price or dollar amount. " +
       "CRITICAL RULE 2: For 'flow_prompt_suggestion', generate a high-precision reference prompt in English for Google Flow (labs.google/fx/tools/flow). It MUST instruct Google Flow to strictly preserve the exact railing architecture, structural design, picket spacing, top rail profile, mounting posts, and authentic color/finish from this reference photo without altering the style, and MUST demand 100% complete isolation on a pure seamless solid white background (#FFFFFF), eliminating all stairs, concrete, siding, scaffolding, dirt, and clutter, so that ONLY the railing appears. " +
-      "Return ONLY a JSON object with keys: name, category, material, finish_color, description_es, description_en, features (array of 4 strings in English), flow_prompt_suggestion.";
+      "Return ONLY a JSON object with keys: name, category, material, finish_color, description_es, description_en, features (array of 4 strings in English), flow_prompt_suggestion, specifications (object with optional keys: post_type, top_cap_type, bottom_channel_type, spindle_type, railing_style, railing_height).";
 
     const resp = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${encodeURIComponent(apiKey)}`,
@@ -399,15 +428,45 @@ async function analyzeCurrentImageWithGemini() {
     const nameEl = document.getElementById("prodName");
     const matEl = document.getElementById("prodMaterial");
     const colEl = document.getElementById("prodFinish");
+    const specMatEl = document.getElementById("specMaterial");
+    const specColEl = document.getElementById("specFinish");
 
-    if (!nameEl.value.trim() || nameEl.value.trim() === DEFAULT_MODEL_NAME) {
-      nameEl.value = DEFAULT_MODEL_NAME;
+    if (parsed.name && (!nameEl.value.trim() || nameEl.value.trim() === DEFAULT_MODEL_NAME)) {
+      nameEl.value = parsed.name;
     }
-    if (!matEl.value.trim() || matEl.value.trim() === DEFAULT_MATERIAL) {
-      matEl.value = DEFAULT_MATERIAL;
+    if (parsed.material) {
+      if (matEl && (!matEl.value.trim() || matEl.value.trim() === DEFAULT_MATERIAL)) {
+        matEl.value = parsed.material;
+      }
+      if (specMatEl && !specMatEl.value.trim()) {
+        specMatEl.value = parsed.material;
+      }
     }
-    if (!colEl.value.trim() || colEl.value.trim() === DEFAULT_FINISH) {
-      colEl.value = DEFAULT_FINISH;
+    if (parsed.finish_color) {
+      if (colEl && (!colEl.value.trim() || colEl.value.trim() === DEFAULT_FINISH)) {
+        colEl.value = parsed.finish_color;
+      }
+      if (specColEl && !specColEl.value.trim()) {
+        specColEl.value = parsed.finish_color;
+      }
+    }
+
+    // Populate structured specifications if proposed by Gemini and currently empty
+    if (parsed.specifications && typeof parsed.specifications === "object") {
+      const specMap = {
+        post_type: "specPostType",
+        top_cap_type: "specTopCap",
+        bottom_channel_type: "specBottomChannel",
+        spindle_type: "specSpindleType",
+        railing_style: "specRailingStyle",
+        railing_height: "specRailingHeight",
+      };
+      for (const [key, elementId] of Object.entries(specMap)) {
+        const inputEl = document.getElementById(elementId);
+        if (inputEl && !inputEl.value.trim() && parsed.specifications[key]) {
+          inputEl.value = parsed.specifications[key];
+        }
+      }
     }
 
     if (parsed.description_en) {
@@ -449,6 +508,140 @@ function parseStrictUserPrice(rawStr) {
   return num;
 }
 
+const DEFAULT_SPEC_FIELDS = [
+  { id: "specPostType", key: "Post Type" },
+  { id: "specTopCap", key: "Top Cap / Top Molding Type" },
+  { id: "specBottomChannel", key: "Bottom Channel Type" },
+  { id: "specSpindleType", key: "Spindle Type" },
+  { id: "specRailingStyle", key: "Railing Style" },
+  { id: "specRailingHeight", key: "Railing Height" },
+  { id: "specMaterial", key: "Material" },
+  { id: "specFinish", key: "Finish / Color" },
+];
+
+function addExtraSpecRow(name = "", val = "") {
+  const container = document.getElementById("extraSpecsContainer");
+  if (!container) return;
+  const row = document.createElement("div");
+  row.className = "extra-spec-row";
+  row.style.display = "flex";
+  row.style.gap = "8px";
+  row.style.alignItems = "center";
+  row.innerHTML = `
+    <input type="text" class="extra-spec-name" placeholder="Specification Name (e.g. Spindle Spacing)" value="${name ? String(name).replace(/"/g, '&quot;') : ''}" style="flex:1;padding:7px 10px;background:#1a2332;border:1px solid #3b4c68;color:#fff;border-radius:6px;font-size:0.85rem;" />
+    <input type="text" class="extra-spec-val" placeholder="Specification Value" value="${val ? String(val).replace(/"/g, '&quot;') : ''}" style="flex:1.4;padding:7px 10px;background:#1a2332;border:1px solid #3b4c68;color:#fff;border-radius:6px;font-size:0.85rem;" />
+    <button type="button" class="btn btn-danger btn-remove-spec" style="padding:6px 10px;font-size:0.8rem;white-space:nowrap;">✕ Remove</button>
+  `;
+  row.querySelector(".btn-remove-spec").addEventListener("click", () => {
+    row.remove();
+  });
+  container.appendChild(row);
+}
+
+function getCurrentSpecifications() {
+  const specs = {};
+  DEFAULT_SPEC_FIELDS.forEach(({ id, key }) => {
+    const el = document.getElementById(id);
+    const val = el ? el.value.trim() : "";
+    if (val) {
+      specs[key] = val;
+    }
+  });
+
+  const extraRows = document.querySelectorAll("#extraSpecsContainer .extra-spec-row");
+  extraRows.forEach((row) => {
+    const nameEl = row.querySelector(".extra-spec-name");
+    const valEl = row.querySelector(".extra-spec-val");
+    const name = nameEl ? nameEl.value.trim() : "";
+    const val = valEl ? valEl.value.trim() : "";
+    if (name && val) {
+      specs[name] = val;
+    }
+  });
+
+  return specs;
+}
+
+function setSpecifications(specs = {}) {
+  DEFAULT_SPEC_FIELDS.forEach(({ id, key }) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.value = specs[key] || "";
+    }
+  });
+
+  const container = document.getElementById("extraSpecsContainer");
+  if (container) {
+    container.innerHTML = "";
+  }
+
+  const defaultKeys = new Set(DEFAULT_SPEC_FIELDS.map((f) => f.key));
+  Object.entries(specs || {}).forEach(([k, v]) => {
+    if (!defaultKeys.has(k) && v) {
+      addExtraSpecRow(k, v);
+    }
+  });
+}
+
+function loadProductIntoEditor(item) {
+  if (!item) return;
+
+  const skuEl = document.getElementById("prodSku");
+  const nameEl = document.getElementById("prodName");
+  const catEl = document.getElementById("prodCategory");
+  const matEl = document.getElementById("prodMaterial");
+  const finEl = document.getElementById("prodFinish");
+  const descEl = document.getElementById("prodDescEn");
+  const featEl = document.getElementById("prodFeatures");
+  const modeEl = document.getElementById("pricingMode");
+  const priceLfEl = document.getElementById("priceLf");
+  const priceKitEl = document.getElementById("priceKit");
+  const kitNoteEl = document.getElementById("kitNote");
+
+  if (skuEl) skuEl.value = item.sku || "";
+  if (nameEl) nameEl.value = item.name || "";
+  if (catEl) catEl.value = item.category || "Aluminum Railing";
+  if (matEl) matEl.value = item.material || "";
+  if (finEl) finEl.value = item.finish || "";
+  if (descEl) descEl.value = item.descEn || "";
+  if (featEl) {
+    featEl.value = Array.isArray(item.features) ? item.features.join("\n") : "";
+  }
+
+  if (modeEl) modeEl.value = item.pricingMode || "both";
+  if (priceLfEl) {
+    priceLfEl.value = item.priceLf !== null && item.priceLf !== undefined ? String(item.priceLf) : "";
+  }
+  if (priceKitEl) {
+    priceKitEl.value = item.priceKit !== null && item.priceKit !== undefined ? String(item.priceKit) : "";
+  }
+  if (kitNoteEl) kitNoteEl.value = item.kitNote || "";
+
+  if (item.whiteImage) {
+    setImageData(item.whiteImage);
+  }
+
+  // Restore product-specific specifications
+  setSpecifications(item.specifications || {});
+
+  // If item had material or finish in specifications, sync them
+  if (item.specifications && item.specifications["Material"]) {
+    const specMat = document.getElementById("specMaterial");
+    if (specMat) specMat.value = item.specifications["Material"];
+  }
+  if (item.specifications && item.specifications["Finish / Color"]) {
+    const specFin = document.getElementById("specFinish");
+    if (specFin) specFin.value = item.specifications["Finish / Color"];
+  }
+
+  if (nameEl) {
+    nameEl.scrollIntoView({ behavior: "smooth", block: "center" });
+    nameEl.focus();
+  }
+
+  setStatus(`✏️ Product [${item.sku}] '${item.name}' loaded into editor. Specifications restored.`);
+}
+
 function saveCurrentProductToCatalog() {
   const name = document.getElementById("prodName").value.trim() || DEFAULT_MODEL_NAME;
   if (!currentWhiteDataUrl) {
@@ -482,18 +675,32 @@ function saveCurrentProductToCatalog() {
   }
 
   const currentSku = document.getElementById("prodSku").value.trim() || getNextSku("RS-");
+
+  // Collect structured specifications
+  const specs = getCurrentSpecifications();
+  const specMatVal = document.getElementById("specMaterial")?.value.trim();
+  const prodMatVal = document.getElementById("prodMaterial")?.value.trim();
+  const finalMaterial = specMatVal || prodMatVal || DEFAULT_MATERIAL;
+  if (specMatVal) specs["Material"] = specMatVal;
+
+  const specFinVal = document.getElementById("specFinish")?.value.trim();
+  const prodFinVal = document.getElementById("prodFinish")?.value.trim();
+  const finalFinish = specFinVal || prodFinVal || DEFAULT_FINISH;
+  if (specFinVal) specs["Finish / Color"] = specFinVal;
+
   const item = {
     sku: currentSku,
     name,
     category: document.getElementById("prodCategory").value,
-    material: document.getElementById("prodMaterial").value.trim() || DEFAULT_MATERIAL,
-    finish: document.getElementById("prodFinish").value.trim() || DEFAULT_FINISH,
+    material: finalMaterial,
+    finish: finalFinish,
     descEn: document.getElementById("prodDescEn").value.trim(),
     features: document
       .getElementById("prodFeatures")
       .value.split("\n")
       .map((s) => s.trim())
       .filter(Boolean),
+    specifications: specs,
     pricingMode,
     priceLf,
     priceKit,
@@ -511,11 +718,14 @@ function saveCurrentProductToCatalog() {
   localStorage.setItem(CATALOG_STORAGE_KEY, JSON.stringify(catalogItems));
   renderCatalogList();
 
+  // Reset specifications form for next product
+  setSpecifications({});
+
   // Auto-increment to the next SKU (e.g. RS-1 -> RS-2 -> RS-3) for the next item
   const nextSku = getNextSku("RS-");
   document.getElementById("prodSku").value = nextSku;
 
-  setStatus(`✅ Product '${item.name}' [${item.sku}] saved to catalog. Next SKU automatically set to ${nextSku}.`);
+  setStatus(`✅ Product '${item.name}' [${item.sku}] saved to catalog with specifications. Next SKU automatically set to ${nextSku}.`);
 }
 
 function loadSavedCatalog() {
@@ -566,22 +776,43 @@ function renderCatalogList() {
   catalogItems.forEach((item, index) => {
     const div = document.createElement("div");
     div.className = "catalog-item";
+
+    const specEntries = Object.entries(item.specifications || {}).filter(
+      ([_, v]) => v && String(v).trim().length > 0
+    );
+    const specsSummaryHtml =
+      specEntries.length > 0
+        ? `<div style="font-size:0.78rem;color:#f6e05e;margin-top:4px;background:rgba(246,224,94,0.08);border:1px solid rgba(246,224,94,0.2);padding:4px 8px;border-radius:4px;">
+            <strong>📋 Specifications:</strong> ${specEntries.map(([k, v]) => `${k}: <em>${v}</em>`).join(" • ")}
+           </div>`
+        : "";
+
     div.innerHTML = `
       <img src="${item.whiteImage}" alt="${item.name}" />
       <div class="catalog-item-info">
         <h4>${index + 1}. ${item.name} [${item.sku}] — ${item.category}</h4>
         <div class="catalog-item-price">💲 ${formatItemPricingText(item)}</div>
         <div style="font-size:0.82rem;color:#cbd5e0;">Material: ${item.material} • Finish: ${item.finish}</div>
+        ${specsSummaryHtml}
         <div style="font-size:0.82rem;color:#a0aec0;margin-top:2px;">${item.descEn || ""}</div>
       </div>
-      <button class="btn btn-danger" data-sku="${item.sku}">🗑️ Delete</button>
+      <div style="display:flex;flex-direction:column;gap:6px;justify-content:center;">
+        <button class="btn btn-blue btn-edit" data-sku="${item.sku}" style="padding:6px 12px;font-size:0.8rem;white-space:nowrap;">✏️ Edit</button>
+        <button class="btn btn-danger btn-delete" data-sku="${item.sku}" style="padding:6px 12px;font-size:0.8rem;white-space:nowrap;">🗑️ Delete</button>
+      </div>
     `;
-    div.querySelector("button").addEventListener("click", () => {
+
+    div.querySelector(".btn-edit").addEventListener("click", () => {
+      loadProductIntoEditor(item);
+    });
+
+    div.querySelector(".btn-delete").addEventListener("click", () => {
       catalogItems = catalogItems.filter((x) => x.sku !== item.sku);
       localStorage.setItem(CATALOG_STORAGE_KEY, JSON.stringify(catalogItems));
       renderCatalogList();
       updateSkuFieldIfSequential();
     });
+
     container.appendChild(div);
   });
 }
@@ -620,7 +851,28 @@ async function exportCatalogPdf() {
   let y = 124;
 
   catalogItems.forEach((item, idx) => {
-    const cardH = 195;
+    const specEntries = Object.entries(item.specifications || {}).filter(
+      ([_, v]) => v && String(v).trim().length > 0
+    );
+
+    const hasSpecs = specEntries.length > 0;
+    const specLinesCount = Math.ceil(specEntries.length / 2);
+    const specBoxHeight = hasSpecs ? 14 + specLinesCount * 11 : 0;
+    const priceBoxH = item.kitNote ? 46 : 34;
+
+    const rx = 242;
+    const maxW = pageW - rx - 48;
+
+    let descLinesCount = 0;
+    if (item.descEn) {
+      const enLines = doc.splitTextToSize(item.descEn, maxW);
+      descLinesCount = Math.min(2, enLines.length);
+    }
+    const descHeight = descLinesCount > 0 ? descLinesCount * 10 + 4 : 0;
+
+    const contentH = 45 + descHeight + specBoxHeight + priceBoxH + 20;
+    const cardH = Math.max(195, contentH);
+
     if (y + cardH > pageH - 55) {
       doc.addPage();
       y = 45;
@@ -639,59 +891,89 @@ async function exportCatalogPdf() {
     } catch (_) {}
 
     doc.setTextColor(74, 85, 104);
+    doc.setFont("helvetica", "normal");
     doc.setFontSize(7.5);
     doc.text(`SKU: ${item.sku} | PURE WHITE BACKGROUND (#FFFFFF)`, 54, y + cardH - 15);
 
     // Product info on right
-    const rx = 242;
-    const maxW = pageW - rx - 48;
-    let ry = y + 24;
+    let ry = y + 20;
 
+    // Title
     doc.setTextColor(20, 28, 43);
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(12);
+    doc.setFontSize(11.5);
     const titleLines = doc.splitTextToSize(`${idx + 1}. ${item.name}`, maxW);
     doc.text(titleLines, rx, ry);
-    ry += titleLines.length * 14 + 2;
+    ry += titleLines.length * 13 + 2;
 
+    // Category / Material / Finish
     doc.setTextColor(36, 50, 74);
+    doc.setFont("helvetica", "normal");
     doc.setFontSize(8.5);
     doc.text(
-      `Category: ${item.category}  •  Material: ${item.material || "Metal or Aluminum"}  •  Finish: ${item.finish || "Any Color Powder coating"}`,
+      `Category: ${item.category}  •  Material: ${item.material || "Aluminum"}  •  Finish: ${item.finish || "Black Powder Coated"}`,
       rx,
       ry
     );
-    ry += 14;
+    ry += 13;
 
-    doc.setTextColor(26, 32, 44);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(8.8);
+    // Description
     if (item.descEn) {
+      doc.setTextColor(55, 65, 81);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8);
       const enLines = doc.splitTextToSize(item.descEn, maxW);
-      doc.text(enLines.slice(0, 3), rx, ry);
-      ry += Math.min(3, enLines.length) * 11 + 4;
+      doc.text(enLines.slice(0, 2), rx, ry);
+      ry += descHeight;
+    }
+
+    // PRODUCT SPECIFICATIONS SECTION (Style & Construction details)
+    if (hasSpecs) {
+      doc.setTextColor(20, 28, 43);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8);
+      doc.text("PRODUCT SPECIFICATIONS:", rx, ry);
+      ry += 10;
+
+      const colW = (maxW - 10) / 2;
+      const col2X = rx + colW + 10;
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7.5);
+
+      for (let sIdx = 0; sIdx < specEntries.length; sIdx++) {
+        const [specName, specVal] = specEntries[sIdx];
+        const isCol2 = sIdx % 2 === 1;
+        const curColX = isCol2 ? col2X : rx;
+        const specLineY = ry + Math.floor(sIdx / 2) * 11;
+
+        const specText = `• ${specName}: ${specVal}`;
+        const clippedText = doc.splitTextToSize(specText, colW)[0];
+        doc.setTextColor(45, 55, 72);
+        doc.text(clippedText, curColX, specLineY);
+      }
+
+      ry += specLinesCount * 11 + 4;
     }
 
     // Pricing box
     doc.setDrawColor(212, 175, 55);
     doc.setFillColor(255, 253, 247);
-    const priceBoxH = item.kitNote ? 48 : 34;
     doc.rect(rx, ry + 2, maxW, priceBoxH, "FD");
 
     doc.setTextColor(36, 50, 74);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(8);
-    doc.text("PRICING SPECIFICATION:", rx + 8, ry + 14);
+    doc.text("PRICING SPECIFICATION:", rx + 8, ry + 13);
 
     doc.setTextColor(183, 121, 31);
     doc.setFontSize(9);
-    doc.text(formatItemPricingText(item), rx + 8, ry + 27);
+    doc.text(formatItemPricingText(item), rx + 8, ry + 26);
 
     if (item.kitNote) {
       doc.setTextColor(74, 85, 104);
       doc.setFont("helvetica", "italic");
       doc.setFontSize(7.5);
-      doc.text(`Includes: ${item.kitNote}`, rx + 8, ry + 41);
+      doc.text(`Includes: ${item.kitNote}`, rx + 8, ry + 39);
     }
 
     y += cardH + 12;
@@ -714,5 +996,5 @@ async function exportCatalogPdf() {
   }
 
   doc.save("NJ_Fence_and_Railing_Product_Catalog.pdf");
-  setStatus("📄 Official PDF Catalog downloaded successfully.");
+  setStatus("📄 Official PDF Catalog downloaded successfully with Product Specifications.");
 }

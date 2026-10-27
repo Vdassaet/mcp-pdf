@@ -125,9 +125,126 @@
             <textarea id="prodDescEn">Modern architectural stair and porch railing system engineered with clean vertical pickets, contoured top handrail, and heavy-duty square mounting posts. Designed for lasting exterior durability and code-compliant safety across New Jersey and New York residences and commercial properties.</textarea>
           </div>
 
+          <!-- Railing Specifications Section (Style & Construction) -->
+          <div class="specs-card" style="background:#131c2a;border:1px solid #3b4c68;border-radius:8px;padding:14px;margin-bottom:14px;">
+            <div style="font-weight:700;color:#f6e05e;font-size:0.95rem;margin-bottom:4px;">
+              📋 PRODUCT SPECIFICATIONS (STYLE & CONSTRUCTION DETAILS)
+            </div>
+            <p style="font-size:0.8rem;color:#a0aec0;margin-bottom:10px;">
+              Describe exact architectural construction details for the PDF catalog. Empty fields are hidden automatically.
+            </p>
+
+            <div class="form-row" style="margin-bottom:6px;">
+              <div class="form-group">
+                <label>Post Type:</label>
+                <input type="text" id="specPostType" list="postTypeSuggestions" placeholder="e.g. Square Post, Round Post" />
+                <datalist id="postTypeSuggestions">
+                  <option value="Square Post"></option>
+                  <option value="Round Post"></option>
+                  <option value="Flanged Surface Mount Post"></option>
+                  <option value="Core-Drilled Post"></option>
+                  <option value="Heavy-Duty Base Post"></option>
+                </datalist>
+              </div>
+              <div class="form-group">
+                <label>Top Cap / Top Molding Type:</label>
+                <input type="text" id="specTopCap" list="topCapSuggestions" placeholder="e.g. Flat Top, Decorative Top" />
+                <datalist id="topCapSuggestions">
+                  <option value="Flat Top"></option>
+                  <option value="Decorative Top"></option>
+                  <option value="Molded Handrail Cap"></option>
+                  <option value="Pyramid Cap"></option>
+                  <option value="Continuous Top Rail"></option>
+                </datalist>
+              </div>
+            </div>
+
+            <div class="form-row" style="margin-bottom:6px;">
+              <div class="form-group">
+                <label>Bottom Channel Type:</label>
+                <input type="text" id="specBottomChannel" list="bottomChannelSuggestions" placeholder="e.g. Standard Bottom Channel" />
+                <datalist id="bottomChannelSuggestions">
+                  <option value="Standard Bottom Channel"></option>
+                  <option value="Wide Bottom Channel"></option>
+                  <option value="Slotted Bottom Channel"></option>
+                  <option value="Flush Bottom Rail"></option>
+                </datalist>
+              </div>
+              <div class="form-group">
+                <label>Spindle Type:</label>
+                <input type="text" id="specSpindleType" list="spindleTypeSuggestions" placeholder="e.g. Square Spindles, Round Spindles" />
+                <datalist id="spindleTypeSuggestions">
+                  <option value="Square Spindles"></option>
+                  <option value="Round Spindles"></option>
+                  <option value="Twisted Spindles"></option>
+                  <option value="Basket Spindles"></option>
+                  <option value="Rectangular Pickets"></option>
+                </datalist>
+              </div>
+            </div>
+
+            <div class="form-row" style="margin-bottom:6px;">
+              <div class="form-group">
+                <label>Railing Style:</label>
+                <input type="text" id="specRailingStyle" list="railingStyleSuggestions" placeholder="e.g. Traditional Vertical Picket" />
+                <datalist id="railingStyleSuggestions">
+                  <option value="Traditional Vertical Picket"></option>
+                  <option value="Vertical Picket Railing"></option>
+                  <option value="Horizontal Railing"></option>
+                  <option value="Modern Architectural"></option>
+                  <option value="Stair and Porch Railing"></option>
+                </datalist>
+              </div>
+              <div class="form-group">
+                <label>Railing Height:</label>
+                <input type="text" id="specRailingHeight" list="railingHeightSuggestions" placeholder="e.g. 36 inches, 42 inches" />
+                <datalist id="railingHeightSuggestions">
+                  <option value="36 inches"></option>
+                  <option value="42 inches"></option>
+                  <option value='36"'></option>
+                  <option value='42"'></option>
+                  <option value="48 inches"></option>
+                </datalist>
+              </div>
+            </div>
+
+            <div class="form-row" style="margin-bottom:10px;">
+              <div class="form-group">
+                <label>Material:</label>
+                <input type="text" id="specMaterial" list="materialSuggestions" placeholder="e.g. Aluminum, Metal or Aluminum" />
+                <datalist id="materialSuggestions">
+                  <option value="Aluminum"></option>
+                  <option value="Metal or Aluminum"></option>
+                  <option value="Wrought Iron / Steel"></option>
+                  <option value="Stainless Steel"></option>
+                  <option value="Powder-Coated Aluminum"></option>
+                </datalist>
+              </div>
+              <div class="form-group">
+                <label>Finish / Color:</label>
+                <input type="text" id="specFinish" list="finishSuggestions" placeholder="e.g. Black Powder Coated, Any Color" />
+                <datalist id="finishSuggestions">
+                  <option value="Black Powder Coated"></option>
+                  <option value="Any Color Powder coating"></option>
+                  <option value="Matte Black"></option>
+                  <option value="Gloss Black"></option>
+                  <option value="Bronze"></option>
+                  <option value="White"></option>
+                </datalist>
+              </div>
+            </div>
+
+            <!-- Dynamic Extra Specifications Container -->
+            <div id="extraSpecsContainer" style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px;"></div>
+
+            <button type="button" id="btnAddExtraSpec" class="btn btn-blue" style="font-size:0.85rem;padding:7px 14px;">
+              ➕ Add Extra Specification
+            </button>
+          </div>
+
           <div class="form-group">
             <label>Observable Specifications (1 per line):</label>
-            <textarea id="prodFeatures">Commercial-grade powder-coated finish resistant to weather elements
+            <textarea id="prodFeatures" rows="3">Commercial-grade powder-coated finish resistant to weather elements
 Clean modern vertical pickets with code-compliant spacing
 Heavy-duty square posts with secure surface-mount base plates
 Versatile installation for exterior stairs, porches, and balconies</textarea>
