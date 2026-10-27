@@ -424,6 +424,40 @@ def generate_catalog_pdf(
 
         story.append(KeepTogether([card_table, Spacer(1, 0.14 * inch)]))
 
+    # End of Catalog: Official Quote Request Notice
+    quote_notice_style = ParagraphStyle(
+        "QuoteNotice",
+        parent=styles["Normal"],
+        fontName="Helvetica",
+        fontSize=8.8,
+        leading=13,
+        textColor=TEXT_DARK,
+    )
+    quote_box_html = (
+        "<b>To Request a Quote:</b> Please contact us with your desired railing style, total linear footage, "
+        "height, and finish color. For orders under 30 linear feet, please request a custom quote, as pricing "
+        "may vary. We will be happy to provide you with a personalized estimate."
+    )
+    quote_table = Table(
+        [[Paragraph(quote_box_html, quote_notice_style)]],
+        colWidths=[7.4 * inch],
+    )
+    quote_table.setStyle(
+        TableStyle(
+            [
+                ("BACKGROUND", (0, 0), (-1, -1), BRAND_PRICE_BG),
+                ("BOX", (0, 0), (-1, -1), 1.2, BRAND_GOLD),
+                ("LINEBEFORE", (0, 0), (0, -1), 4.0, BRAND_GOLD),
+                ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                ("LEFTPADDING", (0, 0), (-1, -1), 12),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 12),
+                ("TOPPADDING", (0, 0), (-1, -1), 9),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 9),
+            ]
+        )
+    )
+    story.append(KeepTogether([Spacer(1, 0.08 * inch), quote_table]))
+
     doc.build(
         story,
         onFirstPage=lambda c, d: _draw_page_chrome(c, d, header),

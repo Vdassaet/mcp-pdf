@@ -979,6 +979,41 @@ async function exportCatalogPdf() {
     y += cardH + 12;
   });
 
+  // End of Catalog: Official Quote Request Notice Box
+  const quoteBoxH = 58;
+  if (y + quoteBoxH > pageH - 55) {
+    doc.addPage();
+    y = 45;
+  }
+
+  // Box background & gold border
+  doc.setDrawColor(212, 175, 55);
+  doc.setFillColor(255, 253, 247);
+  doc.rect(36, y, pageW - 72, quoteBoxH, "FD");
+
+  // Left accent line (Gold)
+  doc.setFillColor(200, 157, 69);
+  doc.rect(36, y, 4, quoteBoxH, "F");
+
+  // Header: "To Request a Quote:"
+  doc.setTextColor(20, 28, 43);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(9.5);
+  doc.text("To Request a Quote:", 50, y + 18);
+
+  // Body text
+  doc.setTextColor(55, 65, 81);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8.5);
+  const quoteNoticeText =
+    "Please contact us with your desired railing style, total linear footage, height, and finish color. " +
+    "For orders under 30 linear feet, please request a custom quote, as pricing may vary. " +
+    "We will be happy to provide you with a personalized estimate.";
+  const quoteNoticeLines = doc.splitTextToSize(quoteNoticeText, pageW - 72 - 28);
+  doc.text(quoteNoticeLines, 50, y + 33);
+
+  y += quoteBoxH + 12;
+
   // Footer on each page
   const pageCount = doc.internal.getNumberOfPages();
   for (let i = 1; i <= pageCount; i++) {
