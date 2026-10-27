@@ -480,6 +480,11 @@ def save_gemini_api_key_to_env(api_key: str) -> Path:
     cleaned = api_key.strip().strip('"').strip("'")
     if not cleaned:
         raise ValueError("La API Key está vacía.")
+    if not cleaned.startswith("AIza") or len(cleaned) < 30:
+        raise ValueError(
+            "El texto pegado no parece una clave de Google AI Studio válida (las claves de Gemini siempre empiezan por 'AIza...'). "
+            "Primero copia la clave desde Google AI Studio haciendo clic en el icono de copiar (dos cuadritos) y vuelve a pegarla."
+        )
 
     env_path = Path(__file__).resolve().parent.parent / ".env"
     lines: List[str] = []
