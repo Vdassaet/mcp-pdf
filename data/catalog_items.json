@@ -1,0 +1,28 @@
+[
+  {
+    "id": "NJF-201",
+    "sku": "NJF-201",
+    "name": "Architectural Matte Black Ornamental Picket Railing / Barandilla Ornamental Negra",
+    "category": "Aluminum Railing",
+    "material": "Powder-Coated Architectural Aluminum / Aluminio Termolacado",
+    "finish_color": "Matte Black with Gold Knuckle Accents",
+    "description_es": "Barandilla arquitectónica de barrotes verticales con canal superior decorativo de anillos y postes cuadrados reforzados con remate piramidal. Diseñada para balcones, porches y escaleras exteriores de alta durabilidad en climas de New Jersey y New York.",
+    "description_en": "Architectural vertical-picket railing featuring an ornamental top ring channel and heavy-duty square newel posts with pyramid caps. Engineered for residential and commercial decks, balconies, and stairs across New Jersey and New York.",
+    "features": [
+      "Postes estructurales cuadrados con tapa piramidal y base de anclaje reforzada",
+      "Canal superior decorativo con anillos ornamentales y detalles centrales",
+      "Acabado negro mate resistente a la corrosión e intemperie (NJ/NY)",
+      "Fotografía procesada sobre fondo blanco puro (#FFFFFF) para catálogo"
+    ],
+    "pricing_mode": "both",
+    "price_per_linear_ft": 54.0,
+    "price_per_kit": 345.0,
+    "kit_includes_note": "Kit de sección de 6 pies (36\" de altura) incluye riel superior/inferior, barrotes y soportes.",
+    "original_image_path": "E:\\mcp\\data\\photos_raw\\NJF-201_raw.jpg",
+    "white_bg_image_path": "E:\\mcp\\data\\photos_white\\NJF-201_white.png",
+    "bg_processing_mode": "auto_isolate_white",
+    "ai_source": "Cuenta Personal Google en Antigravity",
+    "flow_prompt_suggestion": "Studio product photography and architectural showcase of a Architectural Matte Black Ornamental Picket Railing (Aluminum Railing), crafted from Powder-Coated Aluminum in a Matte Black finish. Crisp vertical balusters, structural top and bottom rails, square newel posts with pyramid caps, isolated on a pure seamless white studio background (#FFFFFF), even softbox commercial catalog lighting, ultra-sharp architectural metalwork details, 8k resolution.",
+    "created_at": "2026-10-27 09:21"
+  }
+]
