@@ -120,10 +120,10 @@ def process_photo_to_white_background(
     Process a product photograph and place it on a pure white (#FFFFFF) background.
 
     Modes:
-    - 'auto_isolate_white': Removes background (including gaps between railing balusters)
-      and mounts the isolated railing centered on pure #FFFFFF white canvas.
-    - 'high_contrast_metal_white': Specialized isolation for dark wrought iron / black
-      aluminum railings against lighter backgrounds.
+    - 'rembg_ai_white' or 'auto_isolate_white': Deep learning AI background removal (rembg)
+      with fast thumbnail scaling, compositing foreground over pure white #FFFFFF.
+    - 'railing_metal_isolate_white': Specialized dark-metal railing isolator that strips
+      vinyl siding, stairs, scaffolding, and dirt.
     - 'studio_frame_white': Enhances contrast/sharpness and mounts the full photo inside
       a clean white catalog border (#FFFFFF).
     """
@@ -137,6 +137,71 @@ def process_photo_to_white_background(
     canvas_w, canvas_h = target_size
     max_fg_w = int(canvas_w * (1.0 - 2.0 * padding_ratio))
     max_fg_h = int(canvas_h * (1.0 - 2.0 * padding_ratio))
+
+    # Fast deep learning AI removal via rembg if requested or auto
+    if mode in ("rembg_ai_white", "auto_isolate_white"):
+        try:
+            import rembg
+            # Downsample to max 1200px for 3-second fast execution on CPU
+            work_img = raw_img.copy()
+            work_img.thumbnail((1200, 1200), Image.Resampling.LANCZOS)
+            rgba = rembg.remove(work_img)
+            # Composite over pure white #FFFFFF
+            white_canvas = Image.new("RGBA", rgba.size, (255, 255, 255, 255))
+            white_canvas.paste(rgba, (0, 0), rgba)
+            rgb_comp = white_canvas.convert("RGB")
+
+            # Crop bounding box of non-white pixels
+            bbox = ImageOps.invert(white_canvas.convert("L")).getbbox()
+            if bbox:
+                rgb_comp = rgb_comp.crop(bbox)
+
+            rgb_comp.thumbnail((max_fg_w, max_fg_h), Image.Resampling.LANCZOS)
+            canvas = Image.new("RGB", (canvas_w, canvas_h), PURE_WHITE)
+            ox = (canvas_w - rgb_comp.width) // 2
+            oy = (canvas_h - rgb_comp.height) // 2
+            canvas.paste(rgb_comp, (ox, oy))
+            canvas.save(out_path, format="PNG", optimize=True)
+            return out_path
+        except Exception:
+            pass  # Fall through to algorithmic isolator
+
+    if mode == "railing_metal_isolate_white":
+        # Specific dark metal railing segmentation: strips cream siding, concrete stairs, dirt
+        w, h = raw_img.size
+        arr = np.asarray(raw_img.convert("RGB"), dtype=np.float32)
+        r, g, b = arr[:, :, 0], arr[:, :, 1], arr[:, :, 2]
+        max_c = np.maximum(np.maximum(r, g), b)
+        diff = max_c - np.minimum(np.minimum(r, g), b)
+
+        # Railing bounding box
+        bbox = np.zeros((h, w), dtype=bool)
+        bbox[int(h * 0.10):int(h * 0.85), int(w * 0.20):] = True
+        is_metal = (max_c < 122) & (diff < 45) & bbox
+        is_metal[int(h * 0.76):, :] = False  # exclude bottom dirt/shadows
+
+        mask_img = Image.fromarray((is_metal.astype(np.uint8) * 255), mode="L")
+        mask_img = mask_img.filter(ImageFilter.MaxFilter(size=3)).filter(ImageFilter.GaussianBlur(radius=1.2))
+        alpha = np.asarray(mask_img, dtype=np.float32) / 255.0
+
+        white_arr = np.full_like(arr, 255.0)
+        comp = np.clip(arr * alpha[:, :, None] + white_arr * (1.0 - alpha[:, :, None]), 0, 255).astype(np.uint8)
+        coords = np.argwhere(alpha > 0.2)
+        if coords.size > 0:
+            cy0, cx0 = coords.min(axis=0)
+            cy1, cx1 = coords.max(axis=0)
+            pad = 20
+            cropped = Image.fromarray(comp[max(0, cy0-pad):min(h, cy1+pad), max(0, cx0-pad):min(w, cx1+pad)])
+        else:
+            cropped = Image.fromarray(comp)
+
+        cropped.thumbnail((max_fg_w, max_fg_h), Image.Resampling.LANCZOS)
+        canvas = Image.new("RGB", (canvas_w, canvas_h), PURE_WHITE)
+        ox = (canvas_w - cropped.width) // 2
+        oy = (canvas_h - cropped.height) // 2
+        canvas.paste(cropped, (ox, oy))
+        canvas.save(out_path, format="PNG", optimize=True)
+        return out_path
 
     if mode == "studio_frame_white":
         rgb = raw_img.convert("RGB")

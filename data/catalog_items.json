@@ -24,5 +24,31 @@
     "ai_source": "Gemini API Directa (gemini-3.5-flash-lite)",
     "flow_prompt_suggestion": "Photorealistic architectural studio render of a black powder-coated aluminum railing with vertical pickets, decorative top rings, and gold-accented center knuckles between two heavy square posts, set against a clean neutral background, highly detailed metal texture, professional architectural lighting.",
     "created_at": "2026-10-27 09:57"
+  },
+  {
+    "id": "NJF-D735FD",
+    "sku": "NJF-STR-01",
+    "name": "Architectural Black Metal Stair Railing / Barandilla Metálica Negra Arquitectónica para Escaleras",
+    "category": "Aluminum Railing",
+    "material": "Powder-Coated Steel / Acero Galvanizado Recubierto de Polvo",
+    "finish_color": "Matte Black / Negro Mate",
+    "description_es": "Esta robusta barandilla metálica para escaleras exteriores ofrece una solución de seguridad moderna y duradera para aplicaciones residenciales y comerciales en Nueva Jersey y Nueva York. Fabricada con montantes verticales limpios y un pasamanos superior contorneado, proporciona un soporte estructural firme y un acabado estético limpio que se integra perfectamente con exteriores de estuco y revestimiento vinílico.",
+    "description_en": "This robust exterior metal stair railing offers a modern, durable safety solution for residential and commercial applications across New Jersey and New York. Featuring clean vertical balusters and a contoured top handrail, it provides sturdy structural support and a clean aesthetic finish that integrates seamlessly with siding and stucco exteriors.",
+    "features": [
+      "Heavy-duty steel construction for maximum safety / Construcción de acero de alta resistencia para máxima seguridad",
+      "Durable matte black powder-coated finish resistant to weather elements / Acabado en polvo negro mate resistente a la intemperie",
+      "Secure surface-mount installation on concrete stairs / Instalación segura de montaje en superficie sobre escaleras de concreto",
+      "Compliant picket spacing for residential and commercial building codes / Espaciamiento de barrotes conforme a los códigos de construcción"
+    ],
+    "pricing_mode": "per_linear_foot",
+    "price_per_linear_ft": 62.0,
+    "price_per_kit": 420.0,
+    "kit_includes_note": "Incluye pasamanos inclinado de 6 pies, riel inferior, barrotes verticales, 2 postes de anclaje y tornillería de acero inoxidable.",
+    "original_image_path": "E:/mcp/data/photos_raw/NJF-D735FD_raw.jpeg",
+    "white_bg_image_path": "E:/mcp/data/photos_white/NJF-D735FD_white.png",
+    "bg_processing_mode": "studio_catalog_render",
+    "ai_source": "Gemini API Directa (gemini-3.5-flash-lite)",
+    "flow_prompt_suggestion": "Architectural photograph of a modern black metal stair railing installed on durable concrete exterior steps alongside a clean white siding house, bright daylight, professional architectural catalog showcase, photorealistic, 8k resolution.",
+    "created_at": "2026-10-27 10:29"
   }
 ]

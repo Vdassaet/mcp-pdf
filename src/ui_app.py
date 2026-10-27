@@ -58,8 +58,8 @@ CATEGORIES = [
 ]
 
 BG_MODE_MAP = {
-    "Recorte Inteligente + Fondo Blanco Puro (#FFFFFF)": "auto_isolate_white",
-    "Aislamiento Metal Oscuro + Fondo Blanco (#FFFFFF)": "high_contrast_metal_white",
+    "Recorte Inteligente IA (rembg) sobre Blanco (#FFFFFF)": "rembg_ai_white",
+    "Aislamiento Específico de Barandilla Metal (Sin Revestimiento/Escalera)": "railing_metal_isolate_white",
     "Encuadre Estudio sobre Fondo Blanco (#FFFFFF)": "studio_frame_white",
 }
 
