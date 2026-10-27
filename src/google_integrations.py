@@ -418,33 +418,25 @@ def analyze_railing_image(
     return analyze_with_antigravity_account(img_path)
 
 
+DEFAULT_USER_FLOW_PROMPT = (
+    "Generate a high-precision reference image of the exact railing architecture, structural design, "
+    "picket spacing, top rail profile, mounting posts, and authentic black color and finish from this reference photo "
+    "without altering the style. Demand 100% complete isolation on a pure seamless solid white background (#FFFFFF), "
+    "eliminating all stairs, concrete, brick siding, scaffolding, dirt, and clutter, so that ONLY the railing appears."
+)
+
+
 def generate_flow_prompt_for_product(
-    name: str,
-    category: str,
-    material: str,
-    finish_color: str,
+    name: str = "",
+    category: str = "",
+    material: str = "",
+    finish_color: str = "",
 ) -> str:
     """
-    Generate an image-to-image reference prompt for Google Flow (labs.google/fx/tools/flow)
-    that instructs the model to strictly preserve the exact railing style, pickets, posts,
-    and color from the photo while isolating it completely on a pure white (#FFFFFF) background
-    with zero stairs, siding, or debris.
+    Generate an image-to-image reference prompt for Google Flow (labs.google/fx/tools/flow).
+    Defaults to the user-specified high-precision isolation prompt.
     """
-    model_title = name.strip() or "Architectural Railing System"
-    mat = material.strip() or "Powder-Coated Aluminum / Wrought Iron"
-    col = finish_color.strip() or "Matte Black"
-    return (
-        f"Commercial product catalog studio photograph based on the reference photo. "
-        f"STRICTLY PRESERVE the exact architectural design, picket spacing, top rail profile, "
-        f"mounting post geometry, and authentic {col} finish of this {model_title} ({mat}). "
-        f"DO NOT alter, redesign, or replace the railing style. "
-        f"ISOLATION: The railing must appear COMPLETELY ALONE on a seamless, pure solid white background (#FFFFFF). "
-        f"ELIMINATE ALL environmental surroundings: NO concrete stairs, NO house siding, NO bricks, "
-        f"NO scaffolding, NO caution tape, and NO ground dirt. "
-        f"ONLY the isolated railing structure is present, centered with balanced padding and a very soft, "
-        f"natural floor contact shadow directly under the mounting base plates. "
-        f"Studio softbox lighting, razor-sharp architectural metalwork details, 8k resolution."
-    )
+    return DEFAULT_USER_FLOW_PROMPT
 
 
 def generate_image_via_official_genai_api(

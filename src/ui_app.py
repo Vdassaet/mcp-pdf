@@ -104,6 +104,15 @@ class NJFenceCatalogApp(ctk.CTk):
         self._refresh_catalog_list_ui()
         self._refresh_integrations_report_ui()
 
+        self.bind_all("<Control-v>", self._handle_ctrl_v)
+        self.bind_all("<Control-V>", self._handle_ctrl_v)
+
+    def _handle_ctrl_v(self, event=None) -> None:
+        focus_w = self.focus_get()
+        if focus_w and any(k in str(focus_w).lower() for k in ("entry", "text")):
+            return
+        self.on_paste_photo()
+
     # ------------------------------------------------------------------
     # Top Header Bar
     # ------------------------------------------------------------------
@@ -175,8 +184,8 @@ class NJFenceCatalogApp(ctk.CTk):
         container.grid_columnconfigure(1, weight=6)
         container.grid_rowconfigure(0, weight=1)
 
-        # LEFT PANEL: Photo & White Background + Gemini Trigger
-        left = ctk.CTkScrollableFrame(container, label_text="PASO 1 Y 2: FOTOGRAFÍA Y FONDO BLANCO (#FFFFFF)")
+        # LEFT PANEL: Photo & Gemini Trigger
+        left = ctk.CTkScrollableFrame(container, label_text="PASO 1 Y 2: FOTOGRAFÍA DE BARANDILLA (GOOGLE FLOW / FONDO BLANCO)")
         left.grid(row=0, column=0, sticky="nsew", padx=(4, 8), pady=4)
 
         btn_row = ctk.CTkFrame(left, fg_color="transparent")
@@ -184,7 +193,7 @@ class NJFenceCatalogApp(ctk.CTk):
 
         ctk.CTkButton(
             btn_row,
-            text="📷 Subir Foto de Barandilla / Cerca",
+            text="📂 Seleccionar Imagen",
             command=self.on_select_photo,
             fg_color="#2B6CB0",
             height=36,
@@ -192,91 +201,43 @@ class NJFenceCatalogApp(ctk.CTk):
 
         ctk.CTkButton(
             btn_row,
-            text="🧪 Usar Foto Demo",
-            command=self.on_load_sample_railing,
-            fg_color="#4A5568",
-            width=140,
-            height=36,
-        ).pack(side="left", padx=(4, 0))
-
-        # Background processing controls
-        bg_frame = ctk.CTkFrame(left)
-        bg_frame.pack(fill="x", pady=8, padx=2)
-
-        ctk.CTkLabel(
-            bg_frame,
-            text="Modo de Procesamiento hacia Fondo Blanco Puro (#FFFFFF):",
-            font=ctk.CTkFont(size=12, weight="bold"),
-        ).pack(anchor="w", padx=10, pady=(8, 2))
-
-        self.bg_mode_var = ctk.StringVar(value=list(BG_MODE_MAP.keys())[0])
-        ctk.CTkOptionMenu(
-            bg_frame,
-            variable=self.bg_mode_var,
-            values=list(BG_MODE_MAP.keys()),
-        ).pack(fill="x", padx=10, pady=4)
-
-        tol_row = ctk.CTkFrame(bg_frame, fg_color="transparent")
-        tol_row.pack(fill="x", padx=10, pady=4)
-        ctk.CTkLabel(tol_row, text="Sensibilidad de recorte de fondo:").pack(side="left")
-        self.tol_label = ctk.CTkLabel(tol_row, text="42")
-        self.tol_label.pack(side="right")
-
-        self.tol_slider = ctk.CTkSlider(
-            bg_frame,
-            from_=18,
-            to=85,
-            number_of_steps=67,
-            command=lambda v: self.tol_label.configure(text=f"{int(float(v))}"),
-        )
-        self.tol_slider.set(42)
-        self.tol_slider.pack(fill="x", padx=10, pady=(0, 8))
-
-        ctk.CTkButton(
-            bg_frame,
-            text="⚪ Re-procesar Fotografía sobre Fondo Blanco (#FFFFFF)",
-            command=self.on_process_white_bg,
+            text="📋 Pegar Imagen (Ctrl+V)",
+            command=self.on_paste_photo,
             fg_color="#319795",
             hover_color="#2C7A7B",
-            height=34,
-        ).pack(fill="x", padx=10, pady=(0, 10))
+            height=36,
+        ).pack(side="left", fill="x", expand=True, padx=(2, 4))
 
-        # Previews (Original vs White Background)
-        preview_grid = ctk.CTkFrame(left)
-        preview_grid.pack(fill="x", pady=6)
-        preview_grid.grid_columnconfigure(0, weight=1)
-        preview_grid.grid_columnconfigure(1, weight=1)
+        ctk.CTkButton(
+            btn_row,
+            text="🧪 Foto Demo",
+            command=self.on_load_sample_railing,
+            fg_color="#4A5568",
+            width=105,
+            height=36,
+        ).pack(side="left", padx=(2, 0))
 
-        ctk.CTkLabel(preview_grid, text="Foto Original", font=ctk.CTkFont(weight="bold")).grid(
-            row=0, column=0, pady=(6, 2)
-        )
+        # Single Preview: Studio Photo on Pure White Background
+        preview_frame = ctk.CTkFrame(left, fg_color="#FFFFFF", corner_radius=8, border_width=1, border_color="#CBD5E0")
+        preview_frame.pack(fill="x", pady=8, padx=2)
+
         ctk.CTkLabel(
-            preview_grid,
-            text="Procesada (Fondo Blanco #FFFFFF)",
-            font=ctk.CTkFont(weight="bold"),
-            text_color="#68D391",
-        ).grid(row=0, column=1, pady=(6, 2))
-
-        self.raw_preview_lbl = ctk.CTkLabel(
-            preview_grid,
-            text="[Sube una foto]",
-            width=240,
-            height=185,
-            fg_color="#1A202C",
-            corner_radius=6,
-        )
-        self.raw_preview_lbl.grid(row=1, column=0, padx=6, pady=6)
+            preview_frame,
+            text="Fotografía de Catálogo (Fondo Blanco Puro #FFFFFF)",
+            font=ctk.CTkFont(size=12, weight="bold"),
+            text_color="#1A202C",
+        ).pack(pady=(8, 2))
 
         self.white_preview_lbl = ctk.CTkLabel(
-            preview_grid,
-            text="[Resultado Fondo Blanco]",
-            width=240,
-            height=185,
-            fg_color="#FFFFFF",
-            text_color="#1A202C",
+            preview_frame,
+            text="[Selecciona una imagen o presiona Pegar Imagen (Ctrl+V)]\n(Generada en Google Flow — sin recortes automáticos)",
+            width=440,
+            height=210,
+            fg_color="#F7FAFC",
+            text_color="#4A5568",
             corner_radius=6,
         )
-        self.white_preview_lbl.grid(row=1, column=1, padx=6, pady=6)
+        self.white_preview_lbl.pack(padx=8, pady=(2, 8), fill="both", expand=True)
 
         # Gemini Analysis Card
         ai_frame = ctk.CTkFrame(left, border_width=1, border_color="#D69E2E")
@@ -765,21 +726,17 @@ class NJFenceCatalogApp(ctk.CTk):
     # Event Handlers & Workflows
     # ------------------------------------------------------------------
     def _update_image_previews(self) -> None:
-        if self.current_raw_path and self.current_raw_path.exists():
-            raw_pil = Image.open(self.current_raw_path)
-            raw_ctk = ctk.CTkImage(light_image=raw_pil, dark_image=raw_pil, size=(235, 176))
-            self.raw_preview_lbl.configure(image=raw_ctk, text="")
-            self.raw_preview_lbl.image = raw_ctk  # type: ignore
-
-        if self.current_white_path and self.current_white_path.exists():
-            white_pil = Image.open(self.current_white_path)
-            white_ctk = ctk.CTkImage(light_image=white_pil, dark_image=white_pil, size=(235, 176))
+        target_path = self.current_white_path or self.current_raw_path
+        if target_path and target_path.exists():
+            white_pil = Image.open(target_path)
+            # Scale preview preserving aspect ratio
+            white_ctk = ctk.CTkImage(light_image=white_pil, dark_image=white_pil, size=(380, 210))
             self.white_preview_lbl.configure(image=white_ctk, text="")
             self.white_preview_lbl.image = white_ctk  # type: ignore
 
     def on_select_photo(self) -> None:
         file_path = filedialog.askopenfilename(
-            title="Seleccionar fotografía de barandilla o cerca",
+            title="Seleccionar fotografía de barandilla (Fondo Blanco)",
             filetypes=[
                 ("Imágenes", "*.jpg *.jpeg *.png *.webp *.bmp"),
                 ("Todos los archivos", "*.*"),
@@ -787,44 +744,71 @@ class NJFenceCatalogApp(ctk.CTk):
         )
         if not file_path:
             return
-        self._load_and_process_photo(Path(file_path))
+        self._load_direct_photo(Path(file_path))
 
-    def on_load_sample_railing(self) -> None:
-        sample_raw = RAW_PHOTOS_DIR / "sample_nj_architectural_railing.jpg"
-        create_sample_railing_photo(sample_raw)
-        self._load_and_process_photo(sample_raw)
-        self.tabview.set("1. Subir Foto, Procesar Fondo Blanco y Precios")
-        self.ai_status_lbl.configure(
-            text="Foto de prueba cargada y procesada sobre fondo blanco (#FFFFFF). Haz clic en '✨ Analizar Foto con Gemini' o introduce tus precios.",
-            text_color="#68D391",
-        )
+    def on_paste_photo(self) -> None:
+        from PIL import ImageGrab
+        try:
+            data = ImageGrab.grabclipboard()
+            if isinstance(data, Image.Image):
+                sku_val = self.entry_sku.get().strip() or self.current_item_id
+                out_white = WHITE_PHOTOS_DIR / f"{sku_val}_white.png"
+                if data.mode not in ("RGB", "RGBA"):
+                    data = data.convert("RGB")
+                data.save(out_white, format="PNG")
+                self.current_white_path = out_white
+                self.current_raw_path = out_white
+                self._update_image_previews()
+                self.ai_status_lbl.configure(
+                    text="✅ Imagen pegada correctamente desde el portapapeles. Lista para el catálogo o para analizar con Gemini.",
+                    text_color="#68D391",
+                )
+            elif isinstance(data, list):
+                for p in data:
+                    path = Path(p)
+                    if path.suffix.lower() in [".jpg", ".jpeg", ".png", ".webp", ".bmp"]:
+                        self._load_direct_photo(path)
+                        return
+                messagebox.showinfo("Portapapeles", "No se encontró ningún archivo de imagen en el portapapeles.")
+            else:
+                messagebox.showinfo(
+                    "Portapapeles",
+                    "No hay ninguna imagen en el portapapeles.\nCopia una imagen primero (en Google Flow o explorador de archivos) y presiona 'Pegar Imagen' (o Ctrl+V)."
+                )
+        except Exception as exc:
+            messagebox.showerror("Error al pegar imagen", str(exc))
 
-    def _load_and_process_photo(self, source_path: Path) -> None:
+    def _load_direct_photo(self, source_path: Path) -> None:
         try:
             sku_val = self.entry_sku.get().strip() or self.current_item_id
-            self.current_raw_path = copy_raw_photo_to_workspace(source_path, sku_val)
-            self.on_process_white_bg()
+            out_white = WHITE_PHOTOS_DIR / f"{sku_val}_white.png"
+            img = Image.open(source_path)
+            if img.mode not in ("RGB", "RGBA"):
+                img = img.convert("RGB")
+            img.save(out_white, format="PNG")
+            self.current_white_path = out_white
+            self.current_raw_path = out_white
+            self._update_image_previews()
+            self.ai_status_lbl.configure(
+                text="✅ Imagen cargada correctamente. Lista para el catálogo o para analizar con Gemini.",
+                text_color="#68D391",
+            )
         except Exception as exc:
             messagebox.showerror("Error al cargar imagen", str(exc))
 
+    def on_load_sample_railing(self) -> None:
+        sample_white = WHITE_PHOTOS_DIR / "sample_nj_architectural_railing_white.png"
+        create_sample_railing_photo(sample_white)
+        self._load_direct_photo(sample_white)
+        self.tabview.set("1. Subir Foto, Procesar Fondo Blanco y Precios")
+        self.ai_status_lbl.configure(
+            text="Foto de prueba cargada sobre fondo blanco (#FFFFFF). Haz clic en '✨ Analizar Foto con Gemini' o introduce tus precios.",
+            text_color="#68D391",
+        )
+
     def on_process_white_bg(self) -> None:
-        if not self.current_raw_path or not self.current_raw_path.exists():
-            messagebox.showwarning("Sin fotografía", "Primero sube una fotografía o carga la foto de prueba.")
-            return
-        try:
-            sku_val = self.entry_sku.get().strip() or self.current_item_id
-            mode_key = BG_MODE_MAP.get(self.bg_mode_var.get(), "auto_isolate_white")
-            tolerance = float(self.tol_slider.get())
-            out_white = WHITE_PHOTOS_DIR / f"{sku_val}_white.png"
-            self.current_white_path = process_photo_to_white_background(
-                self.current_raw_path,
-                out_white,
-                mode=mode_key,
-                tolerance=tolerance,
-            )
+        if self.current_white_path:
             self._update_image_previews()
-        except Exception as exc:
-            messagebox.showerror("Error al procesar fondo blanco", str(exc))
 
     def on_analyze_with_gemini(self) -> None:
         target_img = self.current_raw_path or self.current_white_path
@@ -977,7 +961,7 @@ class NJFenceCatalogApp(ctk.CTk):
             kit_includes_note=self.entry_kit_note.get().strip(),
             original_image_path=str(self.current_raw_path) if self.current_raw_path else "",
             white_bg_image_path=str(self.current_white_path) if self.current_white_path else "",
-            bg_processing_mode=BG_MODE_MAP.get(self.bg_mode_var.get(), "auto_isolate_white"),
+            bg_processing_mode="direct_white_studio",
             ai_source=self.current_ai_source,
             flow_prompt_suggestion=self.txt_flow_prompt.get("1.0", "end").strip(),
         )
@@ -1026,8 +1010,12 @@ class NJFenceCatalogApp(ctk.CTk):
         self.entry_price_kit.delete(0, "end")
         self.entry_kit_note.delete(0, "end")
 
-        self.raw_preview_lbl.configure(image=None, text="[Sube una foto]")
-        self.white_preview_lbl.configure(image=None, text="[Resultado Fondo Blanco]")
+        if hasattr(self, "raw_preview_lbl"):
+            self.raw_preview_lbl.configure(image=None, text="[Sube una foto]")
+        self.white_preview_lbl.configure(
+            image=None,
+            text="[Selecciona una imagen o presiona Pegar Imagen (Ctrl+V)]\n(Generada en Google Flow — sin recortes automáticos)",
+        )
 
     def _refresh_catalog_list_ui(self) -> None:
         for child in self.items_scroll.winfo_children():
@@ -1158,7 +1146,7 @@ class NJFenceCatalogApp(ctk.CTk):
         out_path = RAW_PHOTOS_DIR / f"imagen3_{datetime.now().strftime('%H%M%S')}.png"
         try:
             generated = generate_image_via_official_genai_api(prompt_txt, out_path)
-            self._load_and_process_photo(generated)
+            self._load_direct_photo(generated)
             self.tabview.set("1. Subir Foto, Procesar Fondo Blanco y Precios")
             messagebox.showinfo("Imagen generada", f"Imagen generada con Imagen 3 y procesada:\n{generated}")
         except Exception as exc:

@@ -38,61 +38,45 @@
       <!-- Left Column: Photo + White Background + Google Flow Assistant -->
       <div>
         <div class="card">
-          <div class="card-title">STEP 1 & 2: PHOTOGRAPHY ON PURE WHITE BACKGROUND (#FFFFFF)</div>
+          <div class="card-title">PASO 1 Y 2: FOTOGRAFÍA DE BARANDILLA (FONDO BLANCO / GOOGLE FLOW)</div>
           <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;">
             <label class="btn btn-blue" style="cursor:pointer;">
-              📷 Upload Railing Photo
+              📂 Seleccionar Imagen
               <input type="file" id="fileInput" accept="image/*" style="display:none;" />
             </label>
-            <button id="btnReprocessWhite" class="btn btn-teal">⚪ Reprocess White Background</button>
+            <button id="btnPasteImage" class="btn btn-teal">📋 Pegar Imagen (Portapapeles / Ctrl+V)</button>
           </div>
 
-          <div class="form-row">
-            <div class="form-group">
-              <label>White Background Mode (#FFFFFF):</label>
-              <select id="bgModeSelect">
-                <option value="auto_isolate_white">Smart AI Cutout + Pure White Background (#FFFFFF)</option>
-                <option value="high_contrast_metal_white">Dark Metal Isolation + White Background (#FFFFFF)</option>
-                <option value="studio_frame_white">Studio Frame on White Background (#FFFFFF)</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>Cutout Sensitivity (<span id="tolValLabel">42</span>):</label>
-              <input type="range" id="tolSlider" min="18" max="85" value="42" />
+          <div class="preview-box single-studio" id="dropZone" title="Haz clic o arrastra una imagen aquí, o presiona Ctrl+V">
+            <span class="preview-label" style="color:#141c2b; font-weight:700; margin-bottom:8px;">Fotografía del Producto (Fondo Blanco Puro #FFFFFF)</span>
+            <img id="catalogPreviewImg" alt="Vista previa de catálogo" style="display:none; max-width:100%; max-height:220px; object-fit:contain; border-radius:4px;" />
+            <div id="emptyNotice" style="color:#4a5568; font-size:0.88rem; text-align:center; padding:24px 12px;">
+              <div style="font-size:2.2rem; margin-bottom:6px;">📸</div>
+              <strong>Selecciona una imagen o presiona Pegar Imagen (Ctrl+V)</strong><br />
+              <span style="font-size:0.82rem; color:#718096;">Utiliza tu render generado en Google Flow sobre fondo blanco. Sin recortes automáticos del sistema.</span>
             </div>
           </div>
 
-          <div class="preview-grid">
-            <div class="preview-box">
-              <span class="preview-label">Original Photo</span>
-              <img id="rawPreviewImg" alt="Original" />
-            </div>
-            <div class="preview-box white-studio">
-              <span class="preview-label" style="color:#141c2b;">Processed (Pure White Background #FFFFFF)</span>
-              <canvas id="whiteCanvas"></canvas>
-            </div>
-          </div>
-
-          <button id="btnAnalyzeGemini" class="btn btn-gold" style="width:100%;justify-content:center;padding:12px;">
-            ✨ STEP 3: Analyze Photo with Google Gemini
+          <button id="btnAnalyzeGemini" class="btn btn-gold" style="width:100%;justify-content:center;padding:12px;margin-top:10px;">
+            ✨ Analizar Foto con Google Gemini y Proponer Descripción
           </button>
           <div id="statusBanner" class="status-banner">
-            Ready. Upload a railing photo or use the sample railing to process it on a pure white background (#FFFFFF).
+            Listo. Selecciona una imagen de tu equipo o presiona Pegar Imagen (Ctrl+V).
           </div>
         </div>
 
         <!-- Google Flow Assistant -->
         <div class="card">
-          <div class="card-title">🎬 ASSISTANT FOR GOOGLE FLOW (labs.google/fx/tools/flow)</div>
+          <div class="card-title">🎬 ASISTENTE PARA GOOGLE FLOW (labs.google/fx/tools/flow)</div>
           <p style="font-size:0.83rem;color:#cbd5e0;margin-bottom:8px;">
-            Google Flow has no public API (we do not simulate non-existent connections). Use this prompt with your photo in Google Flow to generate a new render with your Google One credits:
+            Google Flow genera la barandilla sobre fondo blanco puro (#FFFFFF) con tus créditos de Google. Usa este prompt por defecto y tu foto de referencia en Google Flow:
           </p>
           <div class="form-group">
-            <textarea id="flowPromptBox">Commercial product catalog studio photograph based on the reference photo. STRICTLY PRESERVE the exact architectural design, picket spacing, top rail profile, mounting post geometry, and authentic Any Color Powder coating finish of this Modern Black  Stair and Porch RG Railing Style (Metal or Aluminum). DO NOT alter, redesign, or replace the railing style. ISOLATION: The railing must appear COMPLETELY ALONE on a seamless, pure solid white background (#FFFFFF). ELIMINATE ALL environmental surroundings: NO concrete stairs, NO house siding, NO bricks, NO scaffolding, NO caution tape, and NO ground dirt. ONLY the isolated railing structure is present, centered with balanced padding and a very soft, natural floor contact shadow directly under the mounting base plates. Studio softbox lighting, razor-sharp architectural metalwork details, 8k resolution.</textarea>
+            <textarea id="flowPromptBox" rows="5">Generate a high-precision reference image of the exact railing architecture, structural design, picket spacing, top rail profile, mounting posts, and authentic black color and finish from this reference photo without altering the style. Demand 100% complete isolation on a pure seamless solid white background (#FFFFFF), eliminating all stairs, concrete, brick siding, scaffolding, dirt, and clutter, so that ONLY the railing appears.</textarea>
           </div>
           <div style="display:flex;gap:10px;">
-            <button id="btnCopyFlowPrompt" class="btn btn-blue">📋 Copy Prompt</button>
-            <a href="https://labs.google/fx/tools/flow" target="_blank" rel="noopener" class="btn btn-teal" style="text-decoration:none;">🌐 Open Google Flow</a>
+            <button id="btnCopyFlowPrompt" class="btn btn-blue">📋 Copiar Prompt</button>
+            <a href="https://labs.google/fx/tools/flow" target="_blank" rel="noopener" class="btn btn-teal" style="text-decoration:none;">🌐 Abrir Google Flow</a>
           </div>
         </div>
       </div>

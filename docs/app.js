@@ -87,30 +87,91 @@ function bindEvents() {
     setStatus("🔒 Key removed from this browser memory.");
   });
 
-  document.getElementById("fileInput").addEventListener("change", (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      currentRawDataUrl = ev.target.result;
-      renderRawAndProcessWhite(currentRawDataUrl);
-    };
-    reader.readAsDataURL(file);
-  });
+  const fileInput = document.getElementById("fileInput");
+  if (fileInput) {
+    fileInput.addEventListener("change", (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (file) {
+        loadFromFile(file);
+      }
+    });
+  }
 
-  document.getElementById("btnLoadDemo").addEventListener("click", () => {
-    generateDemoRailingPhoto();
-  });
+  const btnPaste = document.getElementById("btnPasteImage");
+  if (btnPaste) {
+    btnPaste.addEventListener("click", () => {
+      pasteImageFromClipboard();
+    });
+  }
 
-  document.getElementById("tolSlider").addEventListener("input", (e) => {
-    document.getElementById("tolValLabel").textContent = e.target.value;
-  });
+  // Drag and drop or click on preview area
+  const dropZone = document.getElementById("dropZone");
+  if (dropZone) {
+    dropZone.addEventListener("click", (e) => {
+      const img = document.getElementById("catalogPreviewImg");
+      if (!img || img.style.display === "none" || e.target.id === "emptyNotice" || e.target.closest("#emptyNotice")) {
+        if (fileInput) fileInput.click();
+      }
+    });
+    ["dragenter", "dragover"].forEach((eventName) => {
+      dropZone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        dropZone.classList.add("dragover");
+      });
+    });
+    ["dragleave", "drop"].forEach((eventName) => {
+      dropZone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        dropZone.classList.remove("dragover");
+      });
+    });
+    dropZone.addEventListener("drop", (e) => {
+      if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        const file = e.dataTransfer.files[0];
+        if (file.type.startsWith("image/")) {
+          loadFromFile(file);
+          setStatus("✅ Imagen cargada correctamente mediante arrastrar y soltar.");
+        }
+      }
+    });
+  }
 
-  document.getElementById("btnReprocessWhite").addEventListener("click", () => {
-    if (currentRawDataUrl) {
-      renderRawAndProcessWhite(currentRawDataUrl);
+  // Global paste handler (Ctrl+V anywhere)
+  window.addEventListener("paste", (e) => {
+    const tag = (e.target.tagName || "").toLowerCase();
+    if (tag === "textarea" || tag === "input") {
+      if (e.clipboardData && e.clipboardData.files && e.clipboardData.files.length > 0) {
+        const file = e.clipboardData.files[0];
+        if (file.type.startsWith("image/")) {
+          e.preventDefault();
+          loadFromFile(file);
+          setStatus("✅ Imagen pegada desde el portapapeles (Ctrl+V).");
+          return;
+        }
+      }
+      return;
+    }
+    if (e.clipboardData && e.clipboardData.items) {
+      for (const item of e.clipboardData.items) {
+        if (item.type.indexOf("image") !== -1) {
+          e.preventDefault();
+          const blob = item.getAsFile();
+          if (blob) {
+            loadFromFile(blob);
+            setStatus("✅ Imagen pegada desde el portapapeles (Ctrl+V).");
+            return;
+          }
+        }
+      }
     }
   });
+
+  const btnDemo = document.getElementById("btnLoadDemo");
+  if (btnDemo) {
+    btnDemo.addEventListener("click", () => {
+      generateDemoRailingPhoto();
+    });
+  }
 
   document.getElementById("btnAnalyzeGemini").addEventListener("click", () => {
     analyzeCurrentImageWithGemini();
@@ -127,7 +188,7 @@ function bindEvents() {
   document.getElementById("btnCopyFlowPrompt").addEventListener("click", () => {
     const txt = document.getElementById("flowPromptBox").value;
     navigator.clipboard.writeText(txt);
-    setStatus("📋 Prompt for Google Flow copied to clipboard.");
+    setStatus("📋 Prompt para Google Flow copiado al portapapeles.");
   });
 }
 
@@ -138,9 +199,59 @@ function setStatus(msg, isError = false) {
   el.style.color = isError ? "#feb2b2" : "#9ae6b4";
 }
 
+const DEFAULT_FLOW_PROMPT =
+  "Generate a high-precision reference image of the exact railing architecture, structural design, picket spacing, top rail profile, mounting posts, and authentic black color and finish from this reference photo without altering the style. Demand 100% complete isolation on a pure seamless solid white background (#FFFFFF), eliminating all stairs, concrete, brick siding, scaffolding, dirt, and clutter, so that ONLY the railing appears.";
+
+function setImageData(dataUrl) {
+  currentRawDataUrl = dataUrl;
+  currentWhiteDataUrl = dataUrl;
+
+  const previewImg = document.getElementById("catalogPreviewImg");
+  const emptyNotice = document.getElementById("emptyNotice");
+  if (previewImg) {
+    previewImg.src = dataUrl;
+    previewImg.style.display = "block";
+  }
+  if (emptyNotice) {
+    emptyNotice.style.display = "none";
+  }
+}
+
+function loadFromFile(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    setImageData(e.target.result);
+    setStatus("✅ Imagen cargada correctamente. Lista para el catálogo o para analizar con Gemini.");
+  };
+  reader.readAsDataURL(file);
+}
+
+async function pasteImageFromClipboard() {
+  try {
+    if (!navigator.clipboard || !navigator.clipboard.read) {
+      alert("Para pegar la imagen, haz clic en la página y presiona Ctrl+V en tu teclado.");
+      return;
+    }
+    const items = await navigator.clipboard.read();
+    for (const item of items) {
+      const imageType = item.types.find((t) => t.startsWith("image/"));
+      if (imageType) {
+        const blob = await item.getType(imageType);
+        loadFromFile(blob);
+        setStatus("✅ Imagen pegada correctamente desde el portapapeles.");
+        return;
+      }
+    }
+    alert("No se encontró ninguna imagen en el portapapeles. Copia una imagen primero (en Google Flow o explorador) y presiona 'Pegar Imagen' (o Ctrl+V).");
+  } catch (err) {
+    console.warn("Clipboard API error:", err);
+    alert("Para pegar la imagen, presiona Ctrl+V en tu teclado.");
+  }
+}
+
 /**
- * Generate a realistic outdoor site photo of a modern black railing
- * so the user can test white-background isolation and PDF export with 1 click.
+ * Generate a realistic studio catalog demo railing on pure white background (#FFFFFF)
  */
 function generateDemoRailingPhoto() {
   const c = document.createElement("canvas");
@@ -148,36 +259,43 @@ function generateDemoRailingPhoto() {
   c.height = 675;
   const ctx = c.getContext("2d");
 
-  // Outdoor background
-  const grad = ctx.createLinearGradient(0, 0, 0, c.height);
-  grad.addColorStop(0, "#cddbe8");
-  grad.addColorStop(1, "#dde4eb");
-  ctx.fillStyle = grad;
+  // Pure white studio background
+  ctx.fillStyle = "#FFFFFF";
   ctx.fillRect(0, 0, c.width, c.height);
 
   const metal = "#1a1e24";
   const highlight = "#454d59";
 
-  const leftX = 120;
-  const rightX = 780;
-  const topY = 155;
-  const botY = 505;
-  const floorY = 555;
+  const leftX = 140;
+  const rightX = 760;
+  const topY = 160;
+  const botY = 490;
+  const floorY = 540;
+
+  // Soft floor contact shadow
+  const shadowGrad = ctx.createRadialGradient(
+    (leftX + rightX) / 2, floorY + 4, 40,
+    (leftX + rightX) / 2, floorY + 4, 380
+  );
+  shadowGrad.addColorStop(0, "rgba(0,0,0,0.22)");
+  shadowGrad.addColorStop(1, "rgba(255,255,255,0)");
+  ctx.fillStyle = shadowGrad;
+  ctx.fillRect(leftX - 60, floorY - 5, rightX - leftX + 120, 20);
 
   // Structural Posts
   [leftX, rightX].forEach((px) => {
     ctx.fillStyle = metal;
-    ctx.fillRect(px - 20, topY - 22, 40, floorY - (topY - 22));
+    ctx.fillRect(px - 18, topY - 20, 36, floorY - (topY - 20));
     ctx.fillStyle = highlight;
-    ctx.fillRect(px - 10, topY - 18, 3, floorY - topY);
+    ctx.fillRect(px - 8, topY - 16, 3, floorY - topY);
     // Base plate
     ctx.fillStyle = metal;
-    ctx.fillRect(px - 32, floorY - 12, 64, 14);
+    ctx.fillRect(px - 28, floorY - 10, 56, 12);
     // Pyramid cap
     ctx.beginPath();
-    ctx.moveTo(px - 25, topY - 22);
-    ctx.lineTo(px, topY - 42);
-    ctx.lineTo(px + 25, topY - 22);
+    ctx.moveTo(px - 22, topY - 20);
+    ctx.lineTo(px, topY - 38);
+    ctx.lineTo(px + 22, topY - 20);
     ctx.closePath();
     ctx.fillStyle = metal;
     ctx.fill();
@@ -185,157 +303,33 @@ function generateDemoRailingPhoto() {
 
   // Top Handrail
   ctx.fillStyle = metal;
-  ctx.fillRect(leftX - 25, topY - 18, rightX - leftX + 50, 24);
+  ctx.fillRect(leftX - 22, topY - 16, rightX - leftX + 44, 22);
   ctx.fillStyle = highlight;
-  ctx.fillRect(leftX - 25, topY - 16, rightX - leftX + 50, 4);
+  ctx.fillRect(leftX - 22, topY - 14, rightX - leftX + 44, 4);
 
   // Bottom Rail
   ctx.fillStyle = metal;
-  ctx.fillRect(leftX - 10, botY, rightX - leftX + 20, 16);
+  ctx.fillRect(leftX - 8, botY, rightX - leftX + 16, 14);
 
   // Vertical Pickets (Pickets spacing)
-  const picketCount = 17;
+  const picketCount = 15;
   const picketStep = (rightX - leftX - 40) / (picketCount + 1);
   for (let i = 1; i <= picketCount; i++) {
     const x = leftX + 20 + i * picketStep;
     ctx.fillStyle = metal;
-    ctx.fillRect(x - 5, topY + 6, 10, botY - (topY + 6));
+    ctx.fillRect(x - 4, topY + 6, 8, botY - (topY + 6));
     ctx.fillStyle = highlight;
-    ctx.fillRect(x - 4, topY + 6, 2, botY - (topY + 6));
+    ctx.fillRect(x - 3, topY + 6, 2, botY - (topY + 6));
   }
 
-  // Shadow on floor
-  ctx.fillStyle = "rgba(0,0,0,0.25)";
-  ctx.fillRect(leftX - 45, floorY, rightX - leftX + 90, 8);
-
-  currentRawDataUrl = c.toDataURL("image/jpeg", 0.92);
-  renderRawAndProcessWhite(currentRawDataUrl);
-}
-
-/**
- * Process the photo onto a pure white background (#FFFFFF) with studio framing
- */
-function renderRawAndProcessWhite(dataUrl) {
-  const rawImg = document.getElementById("rawPreviewImg");
-  rawImg.src = dataUrl;
-
-  const img = new Image();
-  img.onload = () => {
-    const canvas = document.getElementById("whiteCanvas");
-    const ctx = canvas.getContext("2d");
-    const cw = 800;
-    const ch = 600;
-    canvas.width = cw;
-    canvas.height = ch;
-
-    // Work canvas for pixel segmentation
-    const tmp = document.createElement("canvas");
-    tmp.width = img.width;
-    tmp.height = img.height;
-    const tctx = tmp.getContext("2d");
-    tctx.drawImage(img, 0, 0);
-
-    const imgData = tctx.getImageData(0, 0, tmp.width, tmp.height);
-    const data = imgData.data;
-    const w = tmp.width;
-    const h = tmp.height;
-
-    // Sample border colors from top and sides
-    let rSum = 0, gSum = 0, bSum = 0, count = 0;
-    for (let x = 0; x < w; x += 4) {
-      const idxTop = x * 4;
-      rSum += data[idxTop];
-      gSum += data[idxTop + 1];
-      bSum += data[idxTop + 2];
-      count++;
-    }
-    const bgR = rSum / count;
-    const bgG = gSum / count;
-    const bgB = bSum / count;
-
-    const tol = parseFloat(document.getElementById("tolSlider").value || "42");
-    const mode = document.getElementById("bgModeSelect").value;
-
-    let minX = w, minY = h, maxX = 0, maxY = 0;
-
-    if (mode !== "studio_frame_white") {
-      for (let y = 0; y < h; y++) {
-        for (let x = 0; x < w; x++) {
-          const idx = (y * w + x) * 4;
-          const r = data[idx];
-          const g = data[idx + 1];
-          const b = data[idx + 2];
-          const dist = Math.hypot(r - bgR, g - bgG, b - bgB);
-          const lum = 0.299 * r + 0.587 * g + 0.114 * b;
-
-          const isBg =
-            mode === "high_contrast_metal_white"
-              ? lum > 175
-              : dist <= tol * 1.15;
-
-          if (isBg) {
-            data[idx] = 255;
-            data[idx + 1] = 255;
-            data[idx + 2] = 255;
-          } else {
-            if (x < minX) minX = x;
-            if (y < minY) minY = y;
-            if (x > maxX) maxX = x;
-            if (y > maxY) maxY = y;
-          }
-        }
-      }
-      tctx.putImageData(imgData, 0, 0);
-    }
-
-    if (maxX <= minX || maxY <= minY) {
-      minX = 0;
-      minY = 0;
-      maxX = w;
-      maxY = h;
-    }
-
-    // Pure #FFFFFF studio canvas
-    ctx.fillStyle = "#FFFFFF";
-    ctx.fillRect(0, 0, cw, ch);
-
-    const cropW = maxX - minX;
-    const cropH = maxY - minY;
-    const pad = 0.1;
-    const availW = cw * (1 - pad * 2);
-    const availH = ch * (1 - pad * 2);
-    const scale = Math.min(availW / cropW, availH / cropH);
-    const drawW = cropW * scale;
-    const drawH = cropH * scale;
-    const ox = (cw - drawW) / 2;
-    const oy = (ch - drawH) / 2;
-
-    ctx.drawImage(tmp, minX, minY, cropW, cropH, ox, oy, drawW, drawH);
-    currentWhiteDataUrl = canvas.toDataURL("image/png");
-  };
-  img.src = dataUrl;
+  setImageData(c.toDataURL("image/png"));
 }
 
 /**
  * Generate a strict image-to-image reference prompt for Google Flow (labs.google/fx/tools/flow).
- * Strictly preserves the railing style, geometry, and color while removing all environmental clutter.
  */
 function generateFlowPrompt(name, material, finishColor) {
-  const modelTitle = (name || DEFAULT_MODEL_NAME).trim();
-  const mat = (material || DEFAULT_MATERIAL).trim();
-  const col = (finishColor || DEFAULT_FINISH).trim();
-  return (
-    `Commercial product catalog studio photograph based on the reference photo. ` +
-    `STRICTLY PRESERVE the exact architectural design, picket spacing, top rail profile, ` +
-    `mounting post geometry, and authentic ${col} finish of this ${modelTitle} (${mat}). ` +
-    `DO NOT alter, redesign, or replace the railing style. ` +
-    `ISOLATION: The railing must appear COMPLETELY ALONE on a seamless, pure solid white background (#FFFFFF). ` +
-    `ELIMINATE ALL environmental surroundings: NO concrete stairs, NO house siding, NO bricks, ` +
-    `NO scaffolding, NO caution tape, and NO ground dirt. ` +
-    `ONLY the isolated railing structure is present, centered with balanced padding and a very soft, ` +
-    `natural floor contact shadow directly under the mounting base plates. ` +
-    `Studio softbox lighting, razor-sharp architectural metalwork details, 8k resolution.`
-  );
+  return DEFAULT_FLOW_PROMPT;
 }
 
 /**
@@ -344,22 +338,22 @@ function generateFlowPrompt(name, material, finishColor) {
  */
 async function analyzeCurrentImageWithGemini() {
   if (!currentRawDataUrl) {
-    alert("Please upload a photo of a railing first.");
+    alert("Por favor selecciona o pega una fotografía de barandilla primero.");
     return;
   }
 
   const apiKey = localStorage.getItem(VAULT_KEY_NAME);
   if (!apiKey) {
     alert(
-      "To analyze from the web version, please paste your GEMINI_API_KEY in the top 'Private Browser Vault' bar."
+      "Para analizar la fotografía desde el navegador, pega tu GEMINI_API_KEY en la barra superior 'Bóveda Privada del Navegador'."
     );
     return;
   }
 
   const btn = document.getElementById("btnAnalyzeGemini");
   btn.disabled = true;
-  btn.textContent = "⏳ Analyzing photo with Gemini...";
-  setStatus("Connecting with Google Gemini to analyze product features (no price fabrication)...");
+  btn.textContent = "⏳ Analizando foto con Gemini...";
+  setStatus("Conectando con Google Gemini para analizar especificaciones visuales...");
 
   try {
     const base64Data = currentRawDataUrl.split(",")[1];
@@ -430,13 +424,13 @@ async function analyzeCurrentImageWithGemini() {
     );
     document.getElementById("flowPromptBox").value = flowPrompt;
 
-    setStatus("✅ Photo successfully analyzed by Gemini. Standard specifications preserved.");
+    setStatus("✅ Fotografía analizada con éxito por Google Gemini. Especificaciones registradas.");
   } catch (err) {
     setStatus(`⚠️ ${err.message}`, true);
     alert(err.message);
   } finally {
     btn.disabled = false;
-    btn.textContent = "✨ STEP 3: Analyze Photo with Google Gemini";
+    btn.textContent = "✨ Analizar Foto con Gemini y Proponer Descripción";
   }
 }
 
