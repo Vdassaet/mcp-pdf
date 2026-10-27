@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NJ Fence and Railing — Catalog Studio (Edición Web Segura)</title>
+  <link rel="stylesheet" href="styles.css" />
+  <!-- jsPDF for client-side PDF catalog generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+  <header class="top-header">
+    <div class="brand-title">
+      <h1>NJ FENCE AND RAILING — CATALOG STUDIO</h1>
+      <p>Fotos sobre Fondo Blanco (#FFFFFF) • Análisis con Gemini IA • Precios Por Pie Lineal o Kit (Sin Inventar Cifras)</p>
+    </div>
+    <div class="header-actions">
+      <button id="btnLoadDemo" class="btn btn-blue">🧪 Cargar Barandilla de Prueba</button>
+      <button id="btnExportPdf" class="btn btn-gold">📄 Descargar Catálogo PDF</button>
+    </div>
+  </header>
+
+  <main class="main-container">
+    <!-- Bóveda Privada del Navegador (Cero llaves en GitHub) -->
+    <section class="vault-bar">
+      <div id="vaultStatusText" class="vault-info">
+        🔒 <strong>Bóveda Privada del Navegador:</strong> Pega tu <code>GEMINI_API_KEY</code> aquí. Se guarda SOLO en tu navegador, jamás en GitHub.
+      </div>
+      <div class="vault-controls">
+        <input type="password" id="inputVaultKey" placeholder="Pega tu clave AIzaSy... (Privada en este PC)" />
+        <button id="btnSaveVaultKey" class="btn btn-green">💾 Guardar en mi Navegador</button>
+        <button id="btnClearVaultKey" class="btn btn-gray">🗑️ Borrar Llave</button>
+        <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" class="btn btn-blue" style="text-decoration:none;">🔑 Crear Key Gratis</a>
+      </div>
+    </section>
+
+    <div class="workspace-grid">
+      <!-- Columna Izquierda: Foto + Fondo Blanco + Gemini -->
+      <div>
+        <div class="card">
+          <div class="card-title">PASO 1 Y 2: FOTOGRAFÍA SOBRE FONDO BLANCO PURO (#FFFFFF)</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;">
+            <label class="btn btn-blue" style="cursor:pointer;">
+              📷 Subir Fotografía de Barandilla
+              <input type="file" id="fileInput" accept="image/*" style="display:none;" />
+            </label>
+            <button id="btnReprocessWhite" class="btn btn-teal">⚪ Re-procesar Fondo Blanco</button>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Modo de Fondo Blanco (#FFFFFF):</label>
+              <select id="bgModeSelect">
+                <option value="auto_isolate_white">Recorte Inteligente + Fondo Blanco Puro (#FFFFFF)</option>
+                <option value="high_contrast_metal_white">Aislamiento Metal Oscuro + Fondo Blanco (#FFFFFF)</option>
+                <option value="studio_frame_white">Encuadre Estudio sobre Fondo Blanco (#FFFFFF)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Sensibilidad de Recorte (<span id="tolValLabel">42</span>):</label>
+              <input type="range" id="tolSlider" min="18" max="85" value="42" />
+            </div>
+          </div>
+
+          <div class="preview-grid">
+            <div class="preview-box">
+              <span class="preview-label">Foto Original</span>
+              <img id="rawPreviewImg" alt="Original" />
+            </div>
+            <div class="preview-box white-studio">
+              <span class="preview-label" style="color:#141c2b;">Procesada (Fondo Blanco #FFFFFF)</span>
+              <canvas id="whiteCanvas"></canvas>
+            </div>
+          </div>
+
+          <button id="btnAnalyzeGemini" class="btn btn-gold" style="width:100%;justify-content:center;padding:12px;">
+            ✨ PASO 3: Analizar Foto con Google Gemini y Proponer Descripción
+          </button>
+          <div id="statusBanner" class="status-banner">
+            Listo. Sube una fotografía o usa la barandilla de prueba para procesarla sobre fondo blanco (#FFFFFF).
+          </div>
+        </div>
+
+        <!-- Asistente Manual Google Flow -->
+        <div class="card">
+          <div class="card-title">🎬 ASISTENTE PARA GOOGLE FLOW (labs.google/fx/tools/flow)</div>
+          <p style="font-size:0.83rem;color:#cbd5e0;margin-bottom:8px;">
+            Google Flow no tiene API pública oficial (no simulamos conexiones inexistentes). Usa este prompt optimizado en inglés dentro de tu cuenta de Google Flow:
+          </p>
+          <div class="form-group">
+            <textarea id="flowPromptBox">Photorealistic studio product render of an architectural matte black ornamental aluminum railing section with square posts, pyramid caps, top ring frieze, and gold-trimmed knuckles on a pure seamless white background (#FFFFFF), 8k commercial catalog photography.</textarea>
+          </div>
+          <div style="display:flex;gap:10px;">
+            <button id="btnCopyFlowPrompt" class="btn btn-blue">📋 Copiar Prompt</button>
+            <a href="https://labs.google/fx/tools/flow" target="_blank" rel="noopener" class="btn btn-teal" style="text-decoration:none;">🌐 Abrir Google Flow</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Columna Derecha: Descripción + Precios Exactos + Catálogo -->
+      <div>
+        <div class="card">
+          <div class="card-title">PASO 4: DESCRIPCIÓN Y PRECIOS EXACTOS (SIN INVENTAR CIFRAS)</div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Nombre del Modelo / Barandilla:</label>
+              <input type="text" id="prodName" value="Ornamental Ring-Top & Gold Collar Picket Railing" />
+            </div>
+            <div class="form-group">
+              <label>Código SKU / Ref:</label>
+              <input type="text" id="prodSku" value="NJF-201" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Categoría:</label>
+              <select id="prodCategory">
+                <option value="Aluminum Railing">Aluminum Railing</option>
+                <option value="Wrought Iron / Steel Railing">Wrought Iron / Steel Railing</option>
+                <option value="Vinyl Railing">Vinyl Railing</option>
+                <option value="Cable / Glass Railing">Cable / Glass Railing</option>
+                <option value="Vinyl Fence">Vinyl Fence</option>
+                <option value="Wood / Chain Link Fence">Wood / Chain Link Fence</option>
+                <option value="Custom Gate">Custom Gate</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Material:</label>
+              <input type="text" id="prodMaterial" value="Powder-Coated Aluminum / Aluminio Termolacado" />
+            </div>
+            <div class="form-group">
+              <label>Color / Acabado:</label>
+              <input type="text" id="prodFinish" value="Matte Black with Gold Accents" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Descripción Comercial y Técnica (Español):</label>
+            <textarea id="prodDescEs">Sistema de barandilla arquitectónica con doble riel superior, franja decorativa de anillos y postes cuadrados con tapas piramidales. Ideal para balcones, porches y escaleras en New Jersey y New York.</textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Commercial & Technical Description (English):</label>
+            <textarea id="prodDescEn">Architectural railing system featuring a double top rail with decorative ring frieze, heavy-duty square posts with pyramid caps, and gold-trimmed picket knuckles for NJ & NY residential/commercial installations.</textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Especificaciones Observables (1 por línea):</label>
+            <textarea id="prodFeatures">Doble riel superior con anillos decorativos
+Postes cuadrados con tapas piramidales y base reforzada
+Acabado negro mate resistente a la intemperie</textarea>
+          </div>
+
+          <!-- Precios Reales -->
+          <div class="pricing-card">
+            <h4 style="color:#d4af37;margin-bottom:6px;">💲 PRECIOS OFICIALES (REGLA ESTRICTA: CERO CIFRAS INVENTADAS)</h4>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Modalidad de Precio:</label>
+                <select id="pricingMode">
+                  <option value="both">Ambos (Pie Lineal + Kit)</option>
+                  <option value="per_linear_foot">Por Pie Lineal ($ / Linear Ft)</option>
+                  <option value="per_kit">Por Kit Completo ($ / Kit)</option>
+                  <option value="quote_only">Sin Cifra / Cotización Bajo Pedido</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Precio por Pie Lineal ($ USD / LF):</label>
+                <input type="text" id="priceLf" placeholder="Ej. 54.00" value="54.00" />
+              </div>
+              <div class="form-group">
+                <label>Precio por Kit ($ USD / Kit):</label>
+                <input type="text" id="priceKit" placeholder="Ej. 345.00" value="345.00" />
+              </div>
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+              <label>Nota del Kit / Incluye:</label>
+              <input type="text" id="kitNote" value='Sección de 6 pies (36" altura) incluye riel superior/inferior, barrotes y soportes.' />
+            </div>
+          </div>
+
+          <button id="btnAddCatalog" class="btn btn-green" style="width:100%;justify-content:center;padding:12px;font-size:1rem;">
+            ➕ Guardar Producto en el Catálogo PDF
+          </button>
+        </div>
+
+        <!-- Lista de Productos en el Catálogo -->
+        <div class="card">
+          <div class="card-title">📚 PRODUCTOS EN EL CATÁLOGO (<span id="catalogCount">0</span>)</div>
+          <div id="catalogListContainer" class="catalog-list"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
