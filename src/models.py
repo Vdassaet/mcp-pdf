@@ -129,8 +129,8 @@ class CompanyHeader:
     company_name: str = "NJ Fence and Railing"
     catalog_title: str = "Catálogo Oficial de Barandillas y Cercas / Product & Pricing Catalog"
     subtitle: str = "Fabricación e Instalación Profesional — New Jersey & New York"
-    phone: str = "(973) 555-0199"
-    email: str = "sales@njfenceandrailing.com"
+    phone: str = "(973) 819-8186"
+    email: str = "njfenceandrailing@gmail.com"
     location: str = "New Jersey & New York Metro Area"
     footer_disclaimer: str = (
         "Precios exactos en USD por Pie Lineal (LF) o por Kit según modelo. "

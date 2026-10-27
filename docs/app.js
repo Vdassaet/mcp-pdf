@@ -830,104 +830,136 @@ async function exportCatalogPdf() {
 
   // Corporate Header Banner (English)
   doc.setFillColor(20, 28, 43);
-  doc.rect(36, 32, pageW - 72, 74, "F");
+  doc.rect(32, 32, pageW - 64, 74, "F");
   doc.setFillColor(200, 157, 69);
-  doc.rect(36, 104, pageW - 72, 3, "F");
+  doc.rect(32, 104, pageW - 64, 3, "F");
 
   doc.setTextColor(255, 255, 255);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(18);
-  doc.text("NJ Fence and Railing", 50, 58);
+  doc.text("NJ Fence and Railing", 48, 58);
 
   doc.setTextColor(200, 157, 69);
   doc.setFontSize(11);
-  doc.text("Official Product & Pricing Catalog", 50, 76);
+  doc.text("Official Product & Pricing Catalog", 48, 76);
 
   doc.setTextColor(226, 232, 240);
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
-  doc.text("New Jersey & New York Metro Area  |  sales@njfenceandrailing.com  |  (973) 555-0199", 50, 93);
+  doc.text("New Jersey & New York Metro Area  |  njfenceandrailing@gmail.com  |  (973) 819-8186", 48, 93);
 
-  let y = 124;
+  const SPEC_DISPLAY_NAMES = {
+    "Top Cap / Top Molding Type": "Top Cap / Molding",
+    "Bottom Channel Type": "Bottom Channel",
+    "Finish / Color": "Finish / Color",
+    "Railing Style": "Railing Style",
+    "Railing Height": "Railing Height",
+    "Post Type": "Post Type",
+    "Spindle Type": "Spindle Type",
+    "Material": "Material"
+  };
+
+  let y = 122;
 
   catalogItems.forEach((item, idx) => {
+    const cardLeft = 32;
+    const cardW = pageW - 64; // 548 pt
+    const photoW = 148;
+    const rx = 198;
+    const maxW = cardLeft + cardW - rx - 12; // 370 pt
+
+    // 1. Title lines
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    const titleLines = doc.splitTextToSize(`${idx + 1}. ${item.name}`, maxW);
+
+    // 2. Subtitle / metadata lines
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8.2);
+    const metaText = `Category: ${item.category || "Aluminum Railing"}  •  Material: ${item.material || "Metal or Aluminum"}  •  Finish: ${item.finish || "Black Powder Coated"}`;
+    const metaLines = doc.splitTextToSize(metaText, maxW);
+
+    // 3. Complete description (100% full, never truncated)
+    let enLines = [];
+    if (item.descEn && item.descEn.trim()) {
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8);
+      enLines = doc.splitTextToSize(item.descEn.trim(), maxW);
+    }
+    const descHeight = enLines.length > 0 ? enLines.length * 10.5 + 4 : 0;
+
+    // 4. Specifications
     const specEntries = Object.entries(item.specifications || {}).filter(
       ([_, v]) => v && String(v).trim().length > 0
     );
-
     const hasSpecs = specEntries.length > 0;
     const specLinesCount = Math.ceil(specEntries.length / 2);
-    const specBoxHeight = hasSpecs ? 14 + specLinesCount * 11 : 0;
-    const priceBoxH = item.kitNote ? 46 : 34;
+    const specBoxHeight = hasSpecs ? 14 + specLinesCount * 11.5 + 2 : 0;
 
-    const rx = 242;
-    const maxW = pageW - rx - 48;
+    // 5. Pricing Box Height
+    const priceBoxH = item.kitNote ? 44 : 32;
 
-    let descLinesCount = 0;
-    if (item.descEn) {
-      const enLines = doc.splitTextToSize(item.descEn, maxW);
-      descLinesCount = Math.min(2, enLines.length);
-    }
-    const descHeight = descLinesCount > 0 ? descLinesCount * 10 + 4 : 0;
+    // Total dynamic card height
+    const totalRightH =
+      16 +
+      (titleLines.length * 13 + 2) +
+      (metaLines.length * 11 + 2) +
+      descHeight +
+      specBoxHeight +
+      priceBoxH +
+      14;
+    const cardH = Math.max(160, totalRightH);
 
-    const contentH = 45 + descHeight + specBoxHeight + priceBoxH + 20;
-    const cardH = Math.max(195, contentH);
-
+    // Check page overflow
     if (y + cardH > pageH - 55) {
       doc.addPage();
       y = 45;
     }
 
-    // Card Box
+    // Outer Card Box
     doc.setDrawColor(220, 226, 236);
     doc.setFillColor(247, 249, 252);
-    doc.rect(36, y, pageW - 72, cardH, "FD");
+    doc.rect(cardLeft, y, cardW, cardH, "FD");
 
     // White photo box (#FFFFFF)
     doc.setFillColor(255, 255, 255);
-    doc.rect(44, y + 10, 185, cardH - 20, "FD");
+    doc.rect(cardLeft + 8, y + 10, photoW, cardH - 20, "FD");
     try {
-      doc.addImage(item.whiteImage, "PNG", 50, y + 16, 173, cardH - 42);
+      doc.addImage(item.whiteImage, "PNG", cardLeft + 16, y + 16, photoW - 16, cardH - 44);
     } catch (_) {}
 
     doc.setTextColor(74, 85, 104);
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(7.5);
-    doc.text(`SKU: ${item.sku} | PURE WHITE BACKGROUND (#FFFFFF)`, 54, y + cardH - 15);
+    doc.setFontSize(7.0);
+    doc.text(`SKU: ${item.sku} | PURE WHITE (#FFFFFF)`, cardLeft + 14, y + cardH - 14);
 
-    // Product info on right
-    let ry = y + 20;
+    // Right Column Rendering
+    let ry = y + 18;
 
     // Title
     doc.setTextColor(20, 28, 43);
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(11.5);
-    const titleLines = doc.splitTextToSize(`${idx + 1}. ${item.name}`, maxW);
+    doc.setFontSize(11);
     doc.text(titleLines, rx, ry);
     ry += titleLines.length * 13 + 2;
 
     // Category / Material / Finish
     doc.setTextColor(36, 50, 74);
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(8.5);
-    doc.text(
-      `Category: ${item.category}  •  Material: ${item.material || "Aluminum"}  •  Finish: ${item.finish || "Black Powder Coated"}`,
-      rx,
-      ry
-    );
-    ry += 13;
+    doc.setFontSize(8.2);
+    doc.text(metaLines, rx, ry);
+    ry += metaLines.length * 11 + 3;
 
-    // Description
-    if (item.descEn) {
+    // Full description
+    if (enLines.length > 0) {
       doc.setTextColor(55, 65, 81);
       doc.setFont("helvetica", "normal");
       doc.setFontSize(8);
-      const enLines = doc.splitTextToSize(item.descEn, maxW);
-      doc.text(enLines.slice(0, 2), rx, ry);
-      ry += descHeight;
+      doc.text(enLines, rx, ry);
+      ry += enLines.length * 10.5 + 4;
     }
 
-    // PRODUCT SPECIFICATIONS SECTION (Style & Construction details)
+    // Specifications (bounded 2 columns, zero overflow)
     if (hasSpecs) {
       doc.setTextColor(20, 28, 43);
       doc.setFont("helvetica", "bold");
@@ -935,45 +967,54 @@ async function exportCatalogPdf() {
       doc.text("PRODUCT SPECIFICATIONS:", rx, ry);
       ry += 10;
 
-      const colW = (maxW - 10) / 2;
-      const col2X = rx + colW + 10;
+      const colW = (maxW - 12) / 2;
+      const col1X = rx;
+      const col2X = rx + colW + 12;
+
       doc.setFont("helvetica", "normal");
-      doc.setFontSize(7.5);
+      doc.setFontSize(7.2);
+      doc.setTextColor(45, 55, 72);
 
       for (let sIdx = 0; sIdx < specEntries.length; sIdx++) {
         const [specName, specVal] = specEntries[sIdx];
         const isCol2 = sIdx % 2 === 1;
-        const curColX = isCol2 ? col2X : rx;
-        const specLineY = ry + Math.floor(sIdx / 2) * 11;
+        const curColX = isCol2 ? col2X : col1X;
+        const specLineY = ry + Math.floor(sIdx / 2) * 11.5;
 
-        const specText = `• ${specName}: ${specVal}`;
-        const clippedText = doc.splitTextToSize(specText, colW)[0];
-        doc.setTextColor(45, 55, 72);
-        doc.text(clippedText, curColX, specLineY);
+        const displayName = SPEC_DISPLAY_NAMES[specName] || specName;
+        let specText = `• ${displayName}: ${specVal}`;
+        if (doc.getTextWidth(specText) > colW) {
+          while (specText.length > 8 && doc.getTextWidth(specText + "...") > colW) {
+            specText = specText.slice(0, -1);
+          }
+          specText += "...";
+        }
+        doc.text(specText, curColX, specLineY);
       }
 
-      ry += specLinesCount * 11 + 4;
+      ry += specLinesCount * 11.5 + 4;
     }
 
     // Pricing box
     doc.setDrawColor(212, 175, 55);
     doc.setFillColor(255, 253, 247);
-    doc.rect(rx, ry + 2, maxW, priceBoxH, "FD");
+    doc.rect(rx, ry, maxW, priceBoxH, "FD");
 
     doc.setTextColor(36, 50, 74);
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(8);
-    doc.text("PRICING SPECIFICATION:", rx + 8, ry + 13);
+    doc.setFontSize(7.8);
+    doc.text("PRICING SPECIFICATION:", rx + 8, ry + 11);
 
     doc.setTextColor(183, 121, 31);
-    doc.setFontSize(9);
-    doc.text(formatItemPricingText(item), rx + 8, ry + 26);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8.8);
+    doc.text(formatItemPricingText(item), rx + 8, ry + 23);
 
     if (item.kitNote) {
       doc.setTextColor(74, 85, 104);
       doc.setFont("helvetica", "italic");
-      doc.setFontSize(7.5);
-      doc.text(`Includes: ${item.kitNote}`, rx + 8, ry + 39);
+      doc.setFontSize(7.2);
+      doc.text(`Includes: ${item.kitNote}`, rx + 8, ry + 35);
     }
 
     y += cardH + 12;
@@ -989,17 +1030,17 @@ async function exportCatalogPdf() {
   // Box background & gold border
   doc.setDrawColor(212, 175, 55);
   doc.setFillColor(255, 253, 247);
-  doc.rect(36, y, pageW - 72, quoteBoxH, "FD");
+  doc.rect(32, y, pageW - 64, quoteBoxH, "FD");
 
   // Left accent line (Gold)
   doc.setFillColor(200, 157, 69);
-  doc.rect(36, y, 4, quoteBoxH, "F");
+  doc.rect(32, y, 4, quoteBoxH, "F");
 
   // Header: "To Request a Quote:"
   doc.setTextColor(20, 28, 43);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(9.5);
-  doc.text("To Request a Quote:", 50, y + 18);
+  doc.text("To Request a Quote:", 46, y + 18);
 
   // Body text
   doc.setTextColor(55, 65, 81);
@@ -1009,8 +1050,8 @@ async function exportCatalogPdf() {
     "Please contact us with your desired railing style, total linear footage, height, and finish color. " +
     "For orders under 30 linear feet, please request a custom quote, as pricing may vary. " +
     "We will be happy to provide you with a personalized estimate.";
-  const quoteNoticeLines = doc.splitTextToSize(quoteNoticeText, pageW - 72 - 28);
-  doc.text(quoteNoticeLines, 50, y + 33);
+  const quoteNoticeLines = doc.splitTextToSize(quoteNoticeText, pageW - 64 - 28);
+  doc.text(quoteNoticeLines, 46, y + 33);
 
   y += quoteBoxH + 12;
 
@@ -1019,12 +1060,12 @@ async function exportCatalogPdf() {
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
     doc.setDrawColor(200, 157, 69);
-    doc.line(36, pageH - 32, pageW - 36, pageH - 32);
+    doc.line(32, pageH - 32, pageW - 32, pageH - 32);
     doc.setFontSize(7.5);
     doc.setTextColor(113, 128, 150);
     doc.text(
-      "NJ Fence and Railing • Exact USD Pricing • Taxes and installation quoted per site measurements.",
-      36,
+      "NJ Fence and Railing • (973) 819-8186 • njfenceandrailing@gmail.com • Exact USD Pricing • Taxes & installation quoted per measurements.",
+      32,
       pageH - 20
     );
     doc.text(`Page ${i} of ${pageCount}`, pageW - 80, pageH - 20);
