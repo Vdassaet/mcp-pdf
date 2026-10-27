@@ -330,7 +330,8 @@ async function analyzeCurrentImageWithGemini() {
     const prompt =
       "You are the technical catalog specialist for 'NJ Fence and Railing' (New Jersey & New York). " +
       "Analyze ONLY what is visually present in this railing/fence photograph. " +
-      "CRITICAL RULE: NEVER invent, guess, or mention any price or dollar amount. " +
+      "CRITICAL RULE 1: NEVER invent, guess, or mention any price or dollar amount. " +
+      "CRITICAL RULE 2: For 'flow_prompt_suggestion', generate a high-precision reference prompt in English for Google Flow (labs.google/fx/tools/flow). It MUST instruct Google Flow to strictly preserve the exact railing architecture, structural design, picket spacing, top rail profile, mounting posts, and authentic color/finish from this reference photo without altering the style, and MUST demand 100% complete isolation on a pure seamless solid white background (#FFFFFF), eliminating all stairs, concrete, siding, scaffolding, dirt, and clutter, so that ONLY the railing appears. " +
       "Return ONLY a JSON object with keys: name, category, material, finish_color, description_es, description_en, features (array of 4 strings), flow_prompt_suggestion.";
 
     const resp = await fetch(
@@ -374,9 +375,13 @@ async function analyzeCurrentImageWithGemini() {
     if (Array.isArray(parsed.features)) {
       document.getElementById("prodFeatures").value = parsed.features.join("\n");
     }
-    if (parsed.flow_prompt_suggestion) {
-      document.getElementById("flowPromptBox").value = parsed.flow_prompt_suggestion;
-    }
+    
+    const flowPrompt = parsed.flow_prompt_suggestion || generateFlowPrompt(
+      parsed.name || document.getElementById("prodName").value,
+      parsed.material || document.getElementById("prodMaterial").value,
+      parsed.finish_color || document.getElementById("prodFinish").value
+    );
+    document.getElementById("flowPromptBox").value = flowPrompt;
 
     setStatus("✅ Fotografía analizada con éxito por Google Gemini 2.5 Flash. Ahora introduce tus precios reales.");
   } catch (err) {
@@ -386,6 +391,28 @@ async function analyzeCurrentImageWithGemini() {
     btn.disabled = false;
     btn.textContent = "✨ Analizar Foto con Gemini y Proponer Descripción";
   }
+}
+
+/**
+ * Generate a strict image-to-image reference prompt for Google Flow (labs.google/fx/tools/flow).
+ * Strictly preserves the railing style, geometry, and color while removing all environmental clutter.
+ */
+function generateFlowPrompt(name, material, finishColor) {
+  const modelTitle = (name || "Architectural Railing System").trim();
+  const mat = (material || "Powder-Coated Aluminum / Steel").trim();
+  const col = (finishColor || "Matte Black").trim();
+  return (
+    `Commercial product catalog studio photograph based on the reference photo. ` +
+    `STRICTLY PRESERVE the exact architectural design, picket spacing, top rail profile, ` +
+    `mounting post geometry, and authentic ${col} finish of this ${modelTitle} (${mat}). ` +
+    `DO NOT alter, redesign, or replace the railing style. ` +
+    `ISOLATION: The railing must appear COMPLETELY ALONE on a seamless, pure solid white background (#FFFFFF). ` +
+    `ELIMINATE ALL environmental surroundings: NO concrete stairs, NO house siding, NO bricks, ` +
+    `NO scaffolding, NO caution tape, and NO ground dirt. ` +
+    `ONLY the isolated railing structure is present, centered with balanced padding and a very soft, ` +
+    `natural floor contact shadow directly under the mounting base plates. ` +
+    `Studio softbox lighting, razor-sharp architectural metalwork details, 8k resolution.`
+  );
 }
 
 /**

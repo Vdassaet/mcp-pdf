@@ -258,7 +258,7 @@ def _build_analysis_prompt(image_path: Path) -> str:
         '  "description_es": "2-3 sentences of professional commercial & technical description in Spanish for NJ Fence and Railing catalog, describing the design, durability, and ideal residential/commercial use without mentioning any prices.",\n'
         '  "description_en": "2-3 sentences of professional commercial & technical description in English for NJ Fence and Railing catalog, describing the design, durability, and ideal residential/commercial use without mentioning any prices.",\n'
         '  "features": ["Feature 1 (ES/EN)", "Feature 2 (ES/EN)", "Feature 3 (ES/EN)", "Feature 4 (ES/EN)"],\n'
-        '  "flow_prompt_suggestion": "Detailed English prompt for Google Flow (Veo / Imagen) to generate a photorealistic architectural showcase or studio white-background render of this exact railing style."\n'
+        '  "flow_prompt_suggestion": "High-precision image-to-image prompt in English for Google Flow (labs.google/fx/tools/flow). Must instruct the model to STRICTLY PRESERVE the exact railing architecture, picket spacing, top rail profile, post geometry, and authentic color/finish from the input photo without modifying or hallucinating a different design. Must explicitly demand: ISOLATION ON PURE SEAMLESS SOLID WHITE BACKGROUND (#FFFFFF), REMOVING all stairs, concrete, siding, scaffolding, dirt, and clutter, leaving ONLY the railing product with subtle soft ground contact shadow."\n'
         "}"
     )
 
@@ -425,17 +425,25 @@ def generate_flow_prompt_for_product(
     finish_color: str,
 ) -> str:
     """
-    Generate a ready-to-use English prompt for manual use in Google Flow (labs.google/fx/tools/flow)
-    to create studio renders or promotional videos of the railing/fence.
+    Generate an image-to-image reference prompt for Google Flow (labs.google/fx/tools/flow)
+    that instructs the model to strictly preserve the exact railing style, pickets, posts,
+    and color from the photo while isolating it completely on a pure white (#FFFFFF) background
+    with zero stairs, siding, or debris.
     """
-    model_title = name.strip() or "Architectural Metal Railing"
+    model_title = name.strip() or "Architectural Railing System"
     mat = material.strip() or "Powder-Coated Aluminum / Wrought Iron"
     col = finish_color.strip() or "Matte Black"
     return (
-        f"Studio product photography and architectural showcase of a {model_title} ({category}), "
-        f"crafted from {mat} in a {col} finish. Crisp vertical balusters, structural top and bottom rails, "
-        "square newel posts with pyramid caps, isolated on a pure seamless white studio background (#FFFFFF), "
-        "even softbox commercial catalog lighting, ultra-sharp architectural metalwork details, 8k resolution."
+        f"Commercial product catalog studio photograph based on the reference photo. "
+        f"STRICTLY PRESERVE the exact architectural design, picket spacing, top rail profile, "
+        f"mounting post geometry, and authentic {col} finish of this {model_title} ({mat}). "
+        f"DO NOT alter, redesign, or replace the railing style. "
+        f"ISOLATION: The railing must appear COMPLETELY ALONE on a seamless, pure solid white background (#FFFFFF). "
+        f"ELIMINATE ALL environmental surroundings: NO concrete stairs, NO house siding, NO bricks, "
+        f"NO scaffolding, NO caution tape, and NO ground dirt. "
+        f"ONLY the isolated railing structure is present, centered with balanced padding and a very soft, "
+        f"natural floor contact shadow directly under the mounting base plates. "
+        f"Studio softbox lighting, razor-sharp architectural metalwork details, 8k resolution."
     )
 
 
