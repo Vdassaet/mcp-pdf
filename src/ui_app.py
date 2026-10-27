@@ -37,6 +37,7 @@ from src.storage import (
     WHITE_PHOTOS_DIR,
     copy_raw_photo_to_workspace,
     ensure_directories,
+    get_next_sku,
     load_catalog_items,
     load_company_header,
     save_catalog_items,
@@ -92,7 +93,7 @@ class NJFenceCatalogApp(ctk.CTk):
         self.catalog_items: List[ProductItem] = load_catalog_items()
         self.company_header: CompanyHeader = load_company_header()
 
-        self.current_item_id: str = ProductItem().id
+        self.current_item_id: str = get_next_sku(self.catalog_items, "RS-")
         self.current_raw_path: Optional[Path] = None
         self.current_white_path: Optional[Path] = None
         self.current_ai_source: str = "manual"
@@ -335,19 +336,20 @@ class NJFenceCatalogApp(ctk.CTk):
         row1.grid_columnconfigure(0, weight=3)
         row1.grid_columnconfigure(1, weight=1)
 
-        ctk.CTkLabel(row1, text="Nombre del Modelo / Barandilla:", font=ctk.CTkFont(weight="bold")).grid(
+        ctk.CTkLabel(row1, text="Model / Railing Name:", font=ctk.CTkFont(weight="bold")).grid(
             row=0, column=0, sticky="w", padx=4
         )
-        ctk.CTkLabel(row1, text="Código SKU / Ref:", font=ctk.CTkFont(weight="bold")).grid(
+        ctk.CTkLabel(row1, text="SKU / Ref Code:", font=ctk.CTkFont(weight="bold")).grid(
             row=0, column=1, sticky="w", padx=4
         )
 
         self.entry_name = ctk.CTkEntry(
-            row1, placeholder_text="Ej. Classic Black Wrought Iron Railing / Barandilla Clásica"
+            row1, placeholder_text="Modern Black  Stair and Porch RG Railing Style"
         )
+        self.entry_name.insert(0, "Modern Black  Stair and Porch RG Railing Style")
         self.entry_name.grid(row=1, column=0, sticky="ew", padx=4, pady=2)
 
-        self.entry_sku = ctk.CTkEntry(row1, placeholder_text="NJF-001")
+        self.entry_sku = ctk.CTkEntry(row1, placeholder_text="RS-1")
         self.entry_sku.insert(0, self.current_item_id)
         self.entry_sku.grid(row=1, column=1, sticky="ew", padx=4, pady=2)
 
@@ -357,13 +359,13 @@ class NJFenceCatalogApp(ctk.CTk):
         row2.grid_columnconfigure(1, weight=1)
         row2.grid_columnconfigure(2, weight=1)
 
-        ctk.CTkLabel(row2, text="Categoría:", font=ctk.CTkFont(weight="bold")).grid(
+        ctk.CTkLabel(row2, text="Category:", font=ctk.CTkFont(weight="bold")).grid(
             row=0, column=0, sticky="w", padx=4
         )
         ctk.CTkLabel(row2, text="Material:", font=ctk.CTkFont(weight="bold")).grid(
             row=0, column=1, sticky="w", padx=4
         )
-        ctk.CTkLabel(row2, text="Color / Acabado:", font=ctk.CTkFont(weight="bold")).grid(
+        ctk.CTkLabel(row2, text="Color / Finish:", font=ctk.CTkFont(weight="bold")).grid(
             row=0, column=2, sticky="w", padx=4
         )
 
@@ -372,10 +374,12 @@ class NJFenceCatalogApp(ctk.CTk):
             row=1, column=0, sticky="ew", padx=4, pady=2
         )
 
-        self.entry_material = ctk.CTkEntry(row2, placeholder_text="Ej. Powder-Coated Aluminum")
+        self.entry_material = ctk.CTkEntry(row2, placeholder_text="Metal or Aluminum")
+        self.entry_material.insert(0, "Metal or Aluminum")
         self.entry_material.grid(row=1, column=1, sticky="ew", padx=4, pady=2)
 
-        self.entry_finish = ctk.CTkEntry(row2, placeholder_text="Ej. Matte Black / Negro Mate")
+        self.entry_finish = ctk.CTkEntry(row2, placeholder_text="Any Color Powder coating")
+        self.entry_finish.insert(0, "Any Color Powder coating")
         self.entry_finish.grid(row=1, column=2, sticky="ew", padx=4, pady=2)
 
         # Descriptions (ES & EN)
@@ -854,21 +858,22 @@ class NJFenceCatalogApp(ctk.CTk):
         )
         self.current_ai_source = str(data.get("ai_source", "Gemini"))
 
-        if data.get("name"):
-            self.entry_name.delete(0, "end")
-            self.entry_name.insert(0, str(data["name"]))
+        # Preserve user-pinned default specifications
+        cur_name = self.entry_name.get().strip()
+        if not cur_name:
+            self.entry_name.insert(0, str(data.get("name") or "Modern Black  Stair and Porch RG Railing Style"))
 
         cat = str(data.get("category", ""))
         if cat in CATEGORIES:
             self.cat_var.set(cat)
 
-        if data.get("material"):
-            self.entry_material.delete(0, "end")
-            self.entry_material.insert(0, str(data["material"]))
+        cur_mat = self.entry_material.get().strip()
+        if not cur_mat:
+            self.entry_material.insert(0, str(data.get("material") or "Metal or Aluminum"))
 
-        if data.get("finish_color"):
-            self.entry_finish.delete(0, "end")
-            self.entry_finish.insert(0, str(data["finish_color"]))
+        cur_finish = self.entry_finish.get().strip()
+        if not cur_finish:
+            self.entry_finish.insert(0, str(data.get("finish_color") or "Any Color Powder coating"))
 
         if data.get("description_es"):
             self.txt_desc_es.delete("1.0", "end")
@@ -996,14 +1001,22 @@ class NJFenceCatalogApp(ctk.CTk):
         self.on_clear_form()
 
     def on_clear_form(self) -> None:
-        self.current_item_id = ProductItem().id
+        self.current_item_id = get_next_sku(self.catalog_items, "RS-")
         self.current_raw_path = None
         self.current_white_path = None
         self.current_ai_source = "manual"
 
         self.entry_name.delete(0, "end")
+        self.entry_name.insert(0, "Modern Black  Stair and Porch RG Railing Style")
+
         self.entry_sku.delete(0, "end")
         self.entry_sku.insert(0, self.current_item_id)
+
+        self.entry_material.delete(0, "end")
+        self.entry_material.insert(0, "Metal or Aluminum")
+
+        self.entry_finish.delete(0, "end")
+        self.entry_finish.insert(0, "Any Color Powder coating")
         self.entry_material.delete(0, "end")
         self.entry_finish.delete(0, "end")
         self.txt_desc_es.delete("1.0", "end")

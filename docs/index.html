@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NJ Fence and Railing — Catalog Studio (Edición Web Segura)</title>
+  <title>NJ Fence and Railing — Catalog Studio (Secure Web Edition)</title>
   <link rel="stylesheet" href="styles.css" />
   <!-- jsPDF for client-side PDF catalog generation -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -12,112 +12,112 @@
   <header class="top-header">
     <div class="brand-title">
       <h1>NJ FENCE AND RAILING — CATALOG STUDIO</h1>
-      <p>Fotos sobre Fondo Blanco (#FFFFFF) • Análisis con Gemini IA • Precios Por Pie Lineal o Kit (Sin Inventar Cifras)</p>
+      <p>Pure White Background (#FFFFFF) • Gemini AI Analysis • Pricing Per Linear Foot or Kit (No Guesswork)</p>
     </div>
     <div class="header-actions">
-      <button id="btnLoadDemo" class="btn btn-blue">🧪 Cargar Barandilla de Prueba</button>
-      <button id="btnExportPdf" class="btn btn-gold">📄 Descargar Catálogo PDF</button>
+      <button id="btnLoadDemo" class="btn btn-blue">🧪 Load Sample Railing</button>
+      <button id="btnExportPdf" class="btn btn-gold">📄 Download PDF Catalog</button>
     </div>
   </header>
 
   <main class="main-container">
-    <!-- Bóveda Privada del Navegador (Cero llaves en GitHub) -->
+    <!-- Private Browser Vault (Zero keys stored in GitHub) -->
     <section class="vault-bar">
       <div id="vaultStatusText" class="vault-info">
-        🔒 <strong>Bóveda Privada del Navegador:</strong> Pega tu <code>GEMINI_API_KEY</code> aquí. Se guarda SOLO en tu navegador, jamás en GitHub.
+        🔒 <strong>Private Browser Vault:</strong> Paste your <code>GEMINI_API_KEY</code> here. Saved locally in your browser, NEVER sent to GitHub.
       </div>
       <div class="vault-controls">
-        <input type="password" id="inputVaultKey" placeholder="Pega tu API Key de Gemini aquí (Privada en este PC)" />
-        <button id="btnSaveVaultKey" class="btn btn-green">💾 Guardar en mi Navegador</button>
-        <button id="btnClearVaultKey" class="btn btn-gray">🗑️ Borrar Llave</button>
-        <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" class="btn btn-blue" style="text-decoration:none;">🔑 Crear Key Gratis</a>
+        <input type="password" id="inputVaultKey" placeholder="Paste your Gemini API Key here (Private on this PC)" />
+        <button id="btnSaveVaultKey" class="btn btn-green">💾 Save in Browser</button>
+        <button id="btnClearVaultKey" class="btn btn-gray">🗑️ Clear Key</button>
+        <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" class="btn btn-blue" style="text-decoration:none;">🔑 Get Free Key</a>
       </div>
     </section>
 
     <div class="workspace-grid">
-      <!-- Columna Izquierda: Foto + Fondo Blanco + Gemini -->
+      <!-- Left Column: Photo + White Background + Google Flow Assistant -->
       <div>
         <div class="card">
-          <div class="card-title">PASO 1 Y 2: FOTOGRAFÍA SOBRE FONDO BLANCO PURO (#FFFFFF)</div>
+          <div class="card-title">STEP 1 & 2: PHOTOGRAPHY ON PURE WHITE BACKGROUND (#FFFFFF)</div>
           <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;">
             <label class="btn btn-blue" style="cursor:pointer;">
-              📷 Subir Fotografía de Barandilla
+              📷 Upload Railing Photo
               <input type="file" id="fileInput" accept="image/*" style="display:none;" />
             </label>
-            <button id="btnReprocessWhite" class="btn btn-teal">⚪ Re-procesar Fondo Blanco</button>
+            <button id="btnReprocessWhite" class="btn btn-teal">⚪ Reprocess White Background</button>
           </div>
 
           <div class="form-row">
             <div class="form-group">
-              <label>Modo de Fondo Blanco (#FFFFFF):</label>
+              <label>White Background Mode (#FFFFFF):</label>
               <select id="bgModeSelect">
-                <option value="auto_isolate_white">Recorte Inteligente + Fondo Blanco Puro (#FFFFFF)</option>
-                <option value="high_contrast_metal_white">Aislamiento Metal Oscuro + Fondo Blanco (#FFFFFF)</option>
-                <option value="studio_frame_white">Encuadre Estudio sobre Fondo Blanco (#FFFFFF)</option>
+                <option value="auto_isolate_white">Smart AI Cutout + Pure White Background (#FFFFFF)</option>
+                <option value="high_contrast_metal_white">Dark Metal Isolation + White Background (#FFFFFF)</option>
+                <option value="studio_frame_white">Studio Frame on White Background (#FFFFFF)</option>
               </select>
             </div>
             <div class="form-group">
-              <label>Sensibilidad de Recorte (<span id="tolValLabel">42</span>):</label>
+              <label>Cutout Sensitivity (<span id="tolValLabel">42</span>):</label>
               <input type="range" id="tolSlider" min="18" max="85" value="42" />
             </div>
           </div>
 
           <div class="preview-grid">
             <div class="preview-box">
-              <span class="preview-label">Foto Original</span>
+              <span class="preview-label">Original Photo</span>
               <img id="rawPreviewImg" alt="Original" />
             </div>
             <div class="preview-box white-studio">
-              <span class="preview-label" style="color:#141c2b;">Procesada (Fondo Blanco #FFFFFF)</span>
+              <span class="preview-label" style="color:#141c2b;">Processed (Pure White Background #FFFFFF)</span>
               <canvas id="whiteCanvas"></canvas>
             </div>
           </div>
 
           <button id="btnAnalyzeGemini" class="btn btn-gold" style="width:100%;justify-content:center;padding:12px;">
-            ✨ PASO 3: Analizar Foto con Google Gemini y Proponer Descripción
+            ✨ STEP 3: Analyze Photo with Google Gemini
           </button>
           <div id="statusBanner" class="status-banner">
-            Listo. Sube una fotografía o usa la barandilla de prueba para procesarla sobre fondo blanco (#FFFFFF).
+            Ready. Upload a railing photo or use the sample railing to process it on a pure white background (#FFFFFF).
           </div>
         </div>
 
-        <!-- Asistente Manual Google Flow -->
+        <!-- Google Flow Assistant -->
         <div class="card">
-          <div class="card-title">🎬 ASISTENTE PARA GOOGLE FLOW (labs.google/fx/tools/flow)</div>
+          <div class="card-title">🎬 ASSISTANT FOR GOOGLE FLOW (labs.google/fx/tools/flow)</div>
           <p style="font-size:0.83rem;color:#cbd5e0;margin-bottom:8px;">
-            Google Flow no tiene API pública oficial (no simulamos conexiones inexistentes). Usa este prompt optimizado en inglés dentro de tu cuenta de Google Flow:
+            Google Flow has no public API (we do not simulate non-existent connections). Use this prompt with your photo in Google Flow to generate a new render with your Google One credits:
           </p>
           <div class="form-group">
-            <textarea id="flowPromptBox">Commercial product catalog studio photograph based on the reference photo. STRICTLY PRESERVE the exact architectural design, picket spacing, top rail profile, mounting post geometry, and authentic matte black finish. DO NOT alter, redesign, or replace the railing style. ISOLATION: The railing must appear COMPLETELY ALONE on a seamless, pure solid white background (#FFFFFF). ELIMINATE ALL environmental surroundings: NO concrete stairs, NO house siding, NO bricks, NO scaffolding, NO caution tape, and NO ground dirt. ONLY the isolated railing structure is present, centered with balanced padding and a very soft, natural floor contact shadow directly under the mounting base plates. Studio softbox lighting, razor-sharp architectural metalwork details, 8k resolution.</textarea>
+            <textarea id="flowPromptBox">Commercial product catalog studio photograph based on the reference photo. STRICTLY PRESERVE the exact architectural design, picket spacing, top rail profile, mounting post geometry, and authentic Any Color Powder coating finish of this Modern Black  Stair and Porch RG Railing Style (Metal or Aluminum). DO NOT alter, redesign, or replace the railing style. ISOLATION: The railing must appear COMPLETELY ALONE on a seamless, pure solid white background (#FFFFFF). ELIMINATE ALL environmental surroundings: NO concrete stairs, NO house siding, NO bricks, NO scaffolding, NO caution tape, and NO ground dirt. ONLY the isolated railing structure is present, centered with balanced padding and a very soft, natural floor contact shadow directly under the mounting base plates. Studio softbox lighting, razor-sharp architectural metalwork details, 8k resolution.</textarea>
           </div>
           <div style="display:flex;gap:10px;">
-            <button id="btnCopyFlowPrompt" class="btn btn-blue">📋 Copiar Prompt</button>
-            <a href="https://labs.google/fx/tools/flow" target="_blank" rel="noopener" class="btn btn-teal" style="text-decoration:none;">🌐 Abrir Google Flow</a>
+            <button id="btnCopyFlowPrompt" class="btn btn-blue">📋 Copy Prompt</button>
+            <a href="https://labs.google/fx/tools/flow" target="_blank" rel="noopener" class="btn btn-teal" style="text-decoration:none;">🌐 Open Google Flow</a>
           </div>
         </div>
       </div>
 
-      <!-- Columna Derecha: Descripción + Precios Exactos + Catálogo -->
+      <!-- Right Column: Product Specs + Strict Pricing + Catalog List -->
       <div>
         <div class="card">
-          <div class="card-title">PASO 4: DESCRIPCIÓN Y PRECIOS EXACTOS (SIN INVENTAR CIFRAS)</div>
+          <div class="card-title">STEP 4: PRODUCT SPECIFICATIONS & EXACT PRICING (NO FABRICATED NUMBERS)</div>
 
           <div class="form-row">
-            <div class="form-group">
-              <label>Nombre del Modelo / Barandilla:</label>
-              <input type="text" id="prodName" value="Ornamental Ring-Top & Gold Collar Picket Railing" />
+            <div class="form-group" style="flex:2;">
+              <label>Model / Railing Name:</label>
+              <input type="text" id="prodName" value="Modern Black  Stair and Porch RG Railing Style" />
             </div>
-            <div class="form-group">
-              <label>Código SKU / Ref:</label>
-              <input type="text" id="prodSku" value="NJF-201" />
+            <div class="form-group" style="flex:1;">
+              <label>SKU / Ref Code:</label>
+              <input type="text" id="prodSku" value="RS-1" />
             </div>
           </div>
 
           <div class="form-row">
             <div class="form-group">
-              <label>Categoría:</label>
+              <label>Category:</label>
               <select id="prodCategory">
-                <option value="Aluminum Railing">Aluminum Railing</option>
+                <option value="Aluminum Railing" selected>Aluminum Railing</option>
                 <option value="Wrought Iron / Steel Railing">Wrought Iron / Steel Railing</option>
                 <option value="Vinyl Railing">Vinyl Railing</option>
                 <option value="Cable / Glass Railing">Cable / Glass Railing</option>
@@ -128,67 +128,63 @@
             </div>
             <div class="form-group">
               <label>Material:</label>
-              <input type="text" id="prodMaterial" value="Powder-Coated Aluminum / Aluminio Termolacado" />
+              <input type="text" id="prodMaterial" value="Metal or Aluminum" />
             </div>
             <div class="form-group">
-              <label>Color / Acabado:</label>
-              <input type="text" id="prodFinish" value="Matte Black with Gold Accents" />
+              <label>Color / Finish:</label>
+              <input type="text" id="prodFinish" value="Any Color Powder coating" />
             </div>
-          </div>
-
-          <div class="form-group">
-            <label>Descripción Comercial y Técnica (Español):</label>
-            <textarea id="prodDescEs">Sistema de barandilla arquitectónica con doble riel superior, franja decorativa de anillos y postes cuadrados con tapas piramidales. Ideal para balcones, porches y escaleras en New Jersey y New York.</textarea>
           </div>
 
           <div class="form-group">
             <label>Commercial & Technical Description (English):</label>
-            <textarea id="prodDescEn">Architectural railing system featuring a double top rail with decorative ring frieze, heavy-duty square posts with pyramid caps, and gold-trimmed picket knuckles for NJ & NY residential/commercial installations.</textarea>
+            <textarea id="prodDescEn">Modern architectural stair and porch railing system engineered with clean vertical pickets, contoured top handrail, and heavy-duty square mounting posts. Designed for lasting exterior durability and code-compliant safety across New Jersey and New York residences and commercial properties.</textarea>
           </div>
 
           <div class="form-group">
-            <label>Especificaciones Observables (1 por línea):</label>
-            <textarea id="prodFeatures">Doble riel superior con anillos decorativos
-Postes cuadrados con tapas piramidales y base reforzada
-Acabado negro mate resistente a la intemperie</textarea>
+            <label>Observable Specifications (1 per line):</label>
+            <textarea id="prodFeatures">Commercial-grade powder-coated finish resistant to weather elements
+Clean modern vertical pickets with code-compliant spacing
+Heavy-duty square posts with secure surface-mount base plates
+Versatile installation for exterior stairs, porches, and balconies</textarea>
           </div>
 
-          <!-- Precios Reales -->
+          <!-- Strict User-Entered Pricing -->
           <div class="pricing-card">
-            <h4 style="color:#d4af37;margin-bottom:6px;">💲 PRECIOS OFICIALES (REGLA ESTRICTA: CERO CIFRAS INVENTADAS)</h4>
+            <h4 style="color:#d4af37;margin-bottom:6px;">💲 OFFICIAL PRICING (STRICT RULE: ZERO INVENTED NUMBERS)</h4>
             <div class="form-row">
               <div class="form-group">
-                <label>Modalidad de Precio:</label>
+                <label>Pricing Mode:</label>
                 <select id="pricingMode">
-                  <option value="both">Ambos (Pie Lineal + Kit)</option>
-                  <option value="per_linear_foot">Por Pie Lineal ($ / Linear Ft)</option>
-                  <option value="per_kit">Por Kit Completo ($ / Kit)</option>
-                  <option value="quote_only">Sin Cifra / Cotización Bajo Pedido</option>
+                  <option value="both" selected>Both (Linear Foot + Kit)</option>
+                  <option value="per_linear_foot">Per Linear Foot ($ / Linear Ft)</option>
+                  <option value="per_kit">Per Full Kit ($ / Kit)</option>
+                  <option value="quote_only">Quote Only / Price Upon Request</option>
                 </select>
               </div>
               <div class="form-group">
-                <label>Precio por Pie Lineal ($ USD / LF):</label>
-                <input type="text" id="priceLf" placeholder="Ej. 54.00" value="54.00" />
+                <label>Price per Linear Foot ($ USD / LF):</label>
+                <input type="text" id="priceLf" placeholder="e.g. 54.00" value="54.00" />
               </div>
               <div class="form-group">
-                <label>Precio por Kit ($ USD / Kit):</label>
-                <input type="text" id="priceKit" placeholder="Ej. 345.00" value="345.00" />
+                <label>Price per Kit ($ USD / Kit):</label>
+                <input type="text" id="priceKit" placeholder="e.g. 345.00" value="345.00" />
               </div>
             </div>
             <div class="form-group" style="margin-bottom:0;">
-              <label>Nota del Kit / Incluye:</label>
-              <input type="text" id="kitNote" value='Sección de 6 pies (36" altura) incluye riel superior/inferior, barrotes y soportes.' />
+              <label>Kit Details / What's Included (Optional):</label>
+              <input type="text" id="kitNote" value='6 ft section (36" height) includes top/bottom rails, vertical balusters, and mounting hardware.' />
             </div>
           </div>
 
           <button id="btnAddCatalog" class="btn btn-green" style="width:100%;justify-content:center;padding:12px;font-size:1rem;">
-            ➕ Guardar Producto en el Catálogo PDF
+            ➕ Save Product to PDF Catalog
           </button>
         </div>
 
-        <!-- Lista de Productos en el Catálogo -->
+        <!-- Products in Catalog List -->
         <div class="card">
-          <div class="card-title">📚 PRODUCTOS EN EL CATÁLOGO (<span id="catalogCount">0</span>)</div>
+          <div class="card-title">📚 PRODUCTS IN CATALOG (<span id="catalogCount">0</span>)</div>
           <div id="catalogListContainer" class="catalog-list"></div>
         </div>
       </div>

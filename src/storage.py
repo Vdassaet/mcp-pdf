@@ -43,6 +43,24 @@ def load_catalog_items() -> List[ProductItem]:
     return []
 
 
+def get_next_sku(items: List[ProductItem], prefix: str = "RS-") -> str:
+    """
+    Compute the next sequential SKU starting with prefix.
+    If 'RS-1' exists, returns 'RS-2', etc.
+    """
+    import re
+    max_num = 0
+    pattern = re.compile(rf"^{re.escape(prefix)}(\d+)$", re.IGNORECASE)
+    for it in items:
+        sku = (it.sku or "").strip()
+        m = pattern.match(sku)
+        if m:
+            num = int(m.group(1))
+            if num > max_num:
+                max_num = num
+    return f"{prefix}{max_num + 1}"
+
+
 def save_catalog_items(items: List[ProductItem]) -> None:
     """Persist catalog items to local JSON storage."""
     ensure_directories()

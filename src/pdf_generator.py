@@ -84,7 +84,7 @@ def _draw_page_chrome(canvas, doc, header: CompanyHeader) -> None:
     canvas.drawRightString(
         page_w - 0.55 * inch,
         0.40 * inch,
-        f"Página / Page {doc.page}",
+        f"Page {doc.page}",
     )
     canvas.restoreState()
 
@@ -204,10 +204,10 @@ def generate_catalog_pdf(
         f"<font size='9.5' color='#E2E8F0'>{escape(header.subtitle)}</font>"
     )
     contact_html = (
-        f"<font size='8.5' color='#FFFFFF'><b>Tel:</b> {escape(header.phone)}<br/>"
+        f"<font size='8.5' color='#FFFFFF'><b>Phone:</b> {escape(header.phone)}<br/>"
         f"<b>Email:</b> {escape(header.email)}<br/>"
-        f"<b>Zona:</b> {escape(header.location)}<br/>"
-        f"<b>Fecha:</b> {date_str}  |  <b>Modelos:</b> {len(items)}</font>"
+        f"<b>Area:</b> {escape(header.location)}<br/>"
+        f"<b>Date:</b> {date_str}  |  <b>Products:</b> {len(items)}</font>"
     )
 
     banner_table = Table(
@@ -251,28 +251,27 @@ def generate_catalog_pdf(
         title_text = escape(item.name or f"Modelo #{idx}")
         right_elements.append(Paragraph(f"{idx}. {title_text}", item_title_style))
 
-        meta_parts = [f"Categoría: {escape(item.category)}"]
+        meta_parts = [f"Category: {escape(item.category)}"]
         if item.material.strip():
             meta_parts.append(f"Material: {escape(item.material.strip())}")
         if item.finish_color.strip():
-            meta_parts.append(f"Acabado: {escape(item.finish_color.strip())}")
+            meta_parts.append(f"Finish: {escape(item.finish_color.strip())}")
         right_elements.append(Paragraph(" &nbsp;&bull;&nbsp; ".join(meta_parts), meta_style))
 
-        lang_mode = header.language_mode
-        if lang_mode in ("es", "bilingual") and item.description_es.strip():
+        if item.description_en.strip():
             right_elements.append(
-                Paragraph(f"<b>Descripción (ES):</b> {escape(item.description_es.strip())}", desc_style)
+                Paragraph(f"<b>Description:</b> {escape(item.description_en.strip())}", desc_style)
             )
-        if lang_mode in ("en", "bilingual") and item.description_en.strip():
+        elif item.description_es.strip():
             right_elements.append(
-                Paragraph(f"<b>Description (EN):</b> {escape(item.description_en.strip())}", desc_style)
+                Paragraph(f"<b>Description:</b> {escape(item.description_es.strip())}", desc_style)
             )
 
         if item.features:
             feats_clean = [escape(f.strip()) for f in item.features if f.strip()][:4]
             if feats_clean:
                 bullets_html = " &nbsp;|&nbsp; ".join([f"&bull; {f}" for f in feats_clean])
-                right_elements.append(Paragraph(f"<b>Especificaciones:</b> {bullets_html}", feature_style))
+                right_elements.append(Paragraph(f"<b>Specifications:</b> {bullets_html}", feature_style))
                 right_elements.append(Spacer(1, 5))
 
         # Strict Pricing Box — NEVER invents numbers
@@ -283,14 +282,14 @@ def generate_catalog_pdf(
         if item.pricing_mode in (PricingMode.PER_LINEAR_FOOT.value, PricingMode.BOTH.value) and has_lf:
             price_rows.append(
                 [
-                    Paragraph("PRECIO POR PIE LINEAL / PER LINEAR FOOT:", price_header_style),
+                    Paragraph("PRICE PER LINEAR FOOT:", price_header_style),
                     Paragraph(f"${item.price_per_linear_ft:,.2f} USD / LF", price_val_style),
                 ]
             )
         if item.pricing_mode in (PricingMode.PER_KIT.value, PricingMode.BOTH.value) and has_kit:
             price_rows.append(
                 [
-                    Paragraph("PRECIO POR KIT COMPLETO / PER COMPLETE KIT:", price_header_style),
+                    Paragraph("PRICE PER COMPLETE KIT:", price_header_style),
                     Paragraph(f"${item.price_per_kit:,.2f} USD / Kit", price_val_style),
                 ]
             )
@@ -298,8 +297,8 @@ def generate_catalog_pdf(
         if not price_rows:
             price_rows.append(
                 [
-                    Paragraph("MODALIDAD DE PRECIO / PRICING:", price_header_style),
-                    Paragraph("Cotización Bajo Pedido / Price Upon Request", price_val_style),
+                    Paragraph("PRICING SPECIFICATION:", price_header_style),
+                    Paragraph("Price Upon Request", price_val_style),
                 ]
             )
 
@@ -307,7 +306,7 @@ def generate_catalog_pdf(
             price_rows.append(
                 [
                     Paragraph(
-                        f"<b>Incluye / Notas:</b> {escape(item.kit_includes_note.strip())}",
+                        f"<b>Includes / Notes:</b> {escape(item.kit_includes_note.strip())}",
                         price_note_style,
                     ),
                     "",

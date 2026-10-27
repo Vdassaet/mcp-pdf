@@ -12,6 +12,11 @@
 const VAULT_KEY_NAME = "njf_gemini_api_key_vault";
 const CATALOG_STORAGE_KEY = "njf_catalog_items_v1";
 
+const DEFAULT_MODEL_NAME = "Modern Black  Stair and Porch RG Railing Style";
+const DEFAULT_CATEGORY = "Aluminum Railing";
+const DEFAULT_MATERIAL = "Metal or Aluminum";
+const DEFAULT_FINISH = "Any Color Powder coating";
+
 let currentRawDataUrl = null;
 let currentWhiteDataUrl = null;
 let catalogItems = [];
@@ -20,7 +25,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initVaultStatus();
   loadSavedCatalog();
   bindEvents();
-  // Load initial demo railing so the app is immediately visual and testable
+  // Load initial demo railing so the studio is visual and testable immediately
   generateDemoRailingPhoto();
 });
 
@@ -29,10 +34,37 @@ function initVaultStatus() {
   const badge = document.getElementById("vaultStatusText");
   if (savedKey && savedKey.length >= 25) {
     badge.innerHTML =
-      "🟢 <strong>Llave Gemini guardada en tu navegador (Privada):</strong> Lista para analizar fotos (0 llaves en GitHub).";
+      "🟢 <strong>Gemini Key active in your browser (Private):</strong> Ready to analyze photos (0 keys stored on GitHub).";
   } else {
     badge.innerHTML =
-      "🔒 <strong>Bóveda Privada del Navegador:</strong> Pega tu <code>GEMINI_API_KEY</code> aquí. Se guarda SOLO en tu PC/navegador, jamás en GitHub.";
+      "🔒 <strong>Private Browser Vault:</strong> Paste your <code>GEMINI_API_KEY</code> here. Saved locally in your browser, NEVER sent to GitHub.";
+  }
+}
+
+/**
+ * Auto-incrementing SKU generator.
+ * If RS-1 exists, generates RS-2, RS-3, etc.
+ */
+function getNextSku(prefix = "RS-") {
+  let maxNum = 0;
+  const regex = new RegExp(`^${prefix}(\\d+)$`, "i");
+  catalogItems.forEach((it) => {
+    const sku = (it.sku || "").trim();
+    const match = sku.match(regex);
+    if (match) {
+      const num = parseInt(match[1], 10);
+      if (num > maxNum) maxNum = num;
+    }
+  });
+  return `${prefix}${maxNum + 1}`;
+}
+
+function updateSkuFieldIfSequential() {
+  const skuEl = document.getElementById("prodSku");
+  const nextSku = getNextSku("RS-");
+  // Only auto-update if empty or matching RS pattern
+  if (!skuEl.value.trim() || /^RS-\d+$/i.test(skuEl.value.trim())) {
+    skuEl.value = nextSku;
   }
 }
 
@@ -40,19 +72,19 @@ function bindEvents() {
   document.getElementById("btnSaveVaultKey").addEventListener("click", () => {
     const val = document.getElementById("inputVaultKey").value.trim();
     if (!val) {
-      alert("Pega tu GEMINI_API_KEY en la casilla antes de guardar.");
+      alert("Please paste your GEMINI_API_KEY into the box before saving.");
       return;
     }
     localStorage.setItem(VAULT_KEY_NAME, val);
     document.getElementById("inputVaultKey").value = "";
     initVaultStatus();
-    setStatus("✅ Tu GEMINI_API_KEY quedó guardada únicamente en este navegador (LocalVault). GitHub no tiene acceso a ella.");
+    setStatus("✅ Your GEMINI_API_KEY is saved safely in this browser (LocalVault). GitHub has zero access to it.");
   });
 
   document.getElementById("btnClearVaultKey").addEventListener("click", () => {
     localStorage.removeItem(VAULT_KEY_NAME);
     initVaultStatus();
-    setStatus("🔒 Llave eliminada de la memoria de este navegador.");
+    setStatus("🔒 Key removed from this browser memory.");
   });
 
   document.getElementById("fileInput").addEventListener("change", (e) => {
@@ -95,7 +127,7 @@ function bindEvents() {
   document.getElementById("btnCopyFlowPrompt").addEventListener("click", () => {
     const txt = document.getElementById("flowPromptBox").value;
     navigator.clipboard.writeText(txt);
-    setStatus("📋 Prompt para Google Flow copiado al portapapeles.");
+    setStatus("📋 Prompt for Google Flow copied to clipboard.");
   });
 }
 
@@ -107,7 +139,7 @@ function setStatus(msg, isError = false) {
 }
 
 /**
- * Generate a realistic outdoor site photo of an NJ Fence & Railing ornamental black railing
+ * Generate a realistic outdoor site photo of a modern black railing
  * so the user can test white-background isolation and PDF export with 1 click.
  */
 function generateDemoRailingPhoto() {
@@ -116,7 +148,7 @@ function generateDemoRailingPhoto() {
   c.height = 675;
   const ctx = c.getContext("2d");
 
-  // Outdoor sky/stone gradient background
+  // Outdoor background
   const grad = ctx.createLinearGradient(0, 0, 0, c.height);
   grad.addColorStop(0, "#cddbe8");
   grad.addColorStop(1, "#dde4eb");
@@ -125,16 +157,14 @@ function generateDemoRailingPhoto() {
 
   const metal = "#1a1e24";
   const highlight = "#454d59";
-  const gold = "#c5a044";
 
   const leftX = 120;
   const rightX = 780;
   const topY = 155;
-  const subY = 200;
   const botY = 505;
   const floorY = 555;
 
-  // Posts
+  // Structural Posts
   [leftX, rightX].forEach((px) => {
     ctx.fillStyle = metal;
     ctx.fillRect(px - 20, topY - 22, 40, floorY - (topY - 22));
@@ -149,54 +179,41 @@ function generateDemoRailingPhoto() {
     ctx.lineTo(px, topY - 42);
     ctx.lineTo(px + 25, topY - 22);
     ctx.closePath();
+    ctx.fillStyle = metal;
     ctx.fill();
   });
 
-  // Top, sub, and bottom rails
+  // Top Handrail
   ctx.fillStyle = metal;
-  ctx.fillRect(leftX + 20, topY, rightX - leftX - 40, 18);
-  ctx.fillRect(leftX + 20, subY, rightX - leftX - 40, 12);
-  ctx.fillRect(leftX + 20, botY, rightX - leftX - 40, 16);
+  ctx.fillRect(leftX - 25, topY - 18, rightX - leftX + 50, 24);
+  ctx.fillStyle = highlight;
+  ctx.fillRect(leftX - 25, topY - 16, rightX - leftX + 50, 4);
 
-  // Pickets + decorative rings + gold collars
-  const numPickets = 13;
-  const span = rightX - leftX - 40;
-  const step = span / (numPickets + 1);
+  // Bottom Rail
+  ctx.fillStyle = metal;
+  ctx.fillRect(leftX - 10, botY, rightX - leftX + 20, 16);
 
-  for (let i = 1; i <= numPickets; i++) {
-    const bx = Math.round(leftX + 20 + i * step);
+  // Vertical Pickets (Pickets spacing)
+  const picketCount = 17;
+  const picketStep = (rightX - leftX - 40) / (picketCount + 1);
+  for (let i = 1; i <= picketCount; i++) {
+    const x = leftX + 20 + i * picketStep;
     ctx.fillStyle = metal;
-    ctx.fillRect(bx - 4, topY + 18, 8, botY - (topY + 18));
-
-    // Ring between topY and subY
-    ctx.strokeStyle = metal;
-    ctx.lineWidth = 3.5;
-    ctx.beginPath();
-    ctx.arc(bx, (topY + 18 + subY) / 2, 11, 0, Math.PI * 2);
-    ctx.stroke();
-
-    // Alternating gold collar
-    if (i % 2 === 1) {
-      const my = (subY + 12 + botY) / 2;
-      ctx.fillStyle = metal;
-      ctx.fillRect(bx - 8, my - 10, 16, 20);
-      ctx.strokeStyle = gold;
-      ctx.lineWidth = 2;
-      ctx.strokeRect(bx - 8, my - 10, 16, 20);
-    }
+    ctx.fillRect(x - 5, topY + 6, 10, botY - (topY + 6));
+    ctx.fillStyle = highlight;
+    ctx.fillRect(x - 4, topY + 6, 2, botY - (topY + 6));
   }
 
-  // Center support foot
-  const midX = (leftX + rightX) / 2;
-  ctx.fillStyle = metal;
-  ctx.fillRect(midX - 6, botY + 16, 12, floorY - (botY + 16));
+  // Shadow on floor
+  ctx.fillStyle = "rgba(0,0,0,0.25)";
+  ctx.fillRect(leftX - 45, floorY, rightX - leftX + 90, 8);
 
-  currentRawDataUrl = c.toDataURL("image/jpeg", 0.94);
+  currentRawDataUrl = c.toDataURL("image/jpeg", 0.92);
   renderRawAndProcessWhite(currentRawDataUrl);
 }
 
 /**
- * Isolate the railing/fence onto a pure white (#FFFFFF) canvas.
+ * Process the photo onto a pure white background (#FFFFFF) with studio framing
  */
 function renderRawAndProcessWhite(dataUrl) {
   const rawImg = document.getElementById("rawPreviewImg");
@@ -300,27 +317,49 @@ function renderRawAndProcessWhite(dataUrl) {
 }
 
 /**
- * Analyze the uploaded photo with Google Gemini (`gemini-2.5-flash`) using the user's
- * browser-stored API key. Strictly forbids inventing any prices.
+ * Generate a strict image-to-image reference prompt for Google Flow (labs.google/fx/tools/flow).
+ * Strictly preserves the railing style, geometry, and color while removing all environmental clutter.
+ */
+function generateFlowPrompt(name, material, finishColor) {
+  const modelTitle = (name || DEFAULT_MODEL_NAME).trim();
+  const mat = (material || DEFAULT_MATERIAL).trim();
+  const col = (finishColor || DEFAULT_FINISH).trim();
+  return (
+    `Commercial product catalog studio photograph based on the reference photo. ` +
+    `STRICTLY PRESERVE the exact architectural design, picket spacing, top rail profile, ` +
+    `mounting post geometry, and authentic ${col} finish of this ${modelTitle} (${mat}). ` +
+    `DO NOT alter, redesign, or replace the railing style. ` +
+    `ISOLATION: The railing must appear COMPLETELY ALONE on a seamless, pure solid white background (#FFFFFF). ` +
+    `ELIMINATE ALL environmental surroundings: NO concrete stairs, NO house siding, NO bricks, ` +
+    `NO scaffolding, NO caution tape, and NO ground dirt. ` +
+    `ONLY the isolated railing structure is present, centered with balanced padding and a very soft, ` +
+    `natural floor contact shadow directly under the mounting base plates. ` +
+    `Studio softbox lighting, razor-sharp architectural metalwork details, 8k resolution.`
+  );
+}
+
+/**
+ * Analyze the uploaded photo with Google Gemini using the user's
+ * browser-stored API key. Preserves user-pinned default specifications.
  */
 async function analyzeCurrentImageWithGemini() {
   if (!currentRawDataUrl) {
-    alert("Primero sube una foto de una barandilla.");
+    alert("Please upload a photo of a railing first.");
     return;
   }
 
   const apiKey = localStorage.getItem(VAULT_KEY_NAME);
   if (!apiKey) {
     alert(
-      "Para analizar desde la versión web, pega primero tu GEMINI_API_KEY en la barra superior 'Bóveda Privada del Navegador' (o usa la aplicación de escritorio en tu PC que ya está conectada a tu cuenta de Antigravity)."
+      "To analyze from the web version, please paste your GEMINI_API_KEY in the top 'Private Browser Vault' bar."
     );
     return;
   }
 
   const btn = document.getElementById("btnAnalyzeGemini");
   btn.disabled = true;
-  btn.textContent = "⏳ Analizando fotografía con Gemini...";
-  setStatus("Conectando con Google Gemini 2.5 Flash para describir la barandilla (sin inventar precios)...");
+  btn.textContent = "⏳ Analyzing photo with Gemini...";
+  setStatus("Connecting with Google Gemini to analyze product features (no price fabrication)...");
 
   try {
     const base64Data = currentRawDataUrl.split(",")[1];
@@ -332,7 +371,7 @@ async function analyzeCurrentImageWithGemini() {
       "Analyze ONLY what is visually present in this railing/fence photograph. " +
       "CRITICAL RULE 1: NEVER invent, guess, or mention any price or dollar amount. " +
       "CRITICAL RULE 2: For 'flow_prompt_suggestion', generate a high-precision reference prompt in English for Google Flow (labs.google/fx/tools/flow). It MUST instruct Google Flow to strictly preserve the exact railing architecture, structural design, picket spacing, top rail profile, mounting posts, and authentic color/finish from this reference photo without altering the style, and MUST demand 100% complete isolation on a pure seamless solid white background (#FFFFFF), eliminating all stairs, concrete, siding, scaffolding, dirt, and clutter, so that ONLY the railing appears. " +
-      "Return ONLY a JSON object with keys: name, category, material, finish_color, description_es, description_en, features (array of 4 strings), flow_prompt_suggestion.";
+      "Return ONLY a JSON object with keys: name, category, material, finish_color, description_es, description_en, features (array of 4 strings in English), flow_prompt_suggestion.";
 
     const resp = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${encodeURIComponent(apiKey)}`,
@@ -355,64 +394,50 @@ async function analyzeCurrentImageWithGemini() {
 
     if (!resp.ok) {
       const errText = await resp.text();
-      throw new Error(`Error de Gemini API (${resp.status}): ${errText}`);
+      throw new Error(`Gemini API Error (${resp.status}): ${errText}`);
     }
 
     const json = await resp.json();
     const rawText = json?.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
     const parsed = JSON.parse(rawText);
 
-    if (parsed.name) document.getElementById("prodName").value = parsed.name;
-    if (parsed.category) document.getElementById("prodCategory").value = parsed.category;
-    if (parsed.material) document.getElementById("prodMaterial").value = parsed.material;
-    if (parsed.finish_color) document.getElementById("prodFinish").value = parsed.finish_color;
-    if (parsed.description_es) {
-      document.getElementById("prodDescEs").value = String(parsed.description_es).replace(/\$\s*\d+/g, "");
+    // Maintain user-specified default specification values
+    const nameEl = document.getElementById("prodName");
+    const matEl = document.getElementById("prodMaterial");
+    const colEl = document.getElementById("prodFinish");
+
+    if (!nameEl.value.trim() || nameEl.value.trim() === DEFAULT_MODEL_NAME) {
+      nameEl.value = DEFAULT_MODEL_NAME;
     }
+    if (!matEl.value.trim() || matEl.value.trim() === DEFAULT_MATERIAL) {
+      matEl.value = DEFAULT_MATERIAL;
+    }
+    if (!colEl.value.trim() || colEl.value.trim() === DEFAULT_FINISH) {
+      colEl.value = DEFAULT_FINISH;
+    }
+
     if (parsed.description_en) {
       document.getElementById("prodDescEn").value = String(parsed.description_en).replace(/\$\s*\d+/g, "");
     }
-    if (Array.isArray(parsed.features)) {
+    if (Array.isArray(parsed.features) && parsed.features.length > 0) {
       document.getElementById("prodFeatures").value = parsed.features.join("\n");
     }
-    
+
     const flowPrompt = parsed.flow_prompt_suggestion || generateFlowPrompt(
-      parsed.name || document.getElementById("prodName").value,
-      parsed.material || document.getElementById("prodMaterial").value,
-      parsed.finish_color || document.getElementById("prodFinish").value
+      nameEl.value,
+      matEl.value,
+      colEl.value
     );
     document.getElementById("flowPromptBox").value = flowPrompt;
 
-    setStatus("✅ Fotografía analizada con éxito por Google Gemini 2.5 Flash. Ahora introduce tus precios reales.");
+    setStatus("✅ Photo successfully analyzed by Gemini. Standard specifications preserved.");
   } catch (err) {
     setStatus(`⚠️ ${err.message}`, true);
     alert(err.message);
   } finally {
     btn.disabled = false;
-    btn.textContent = "✨ Analizar Foto con Gemini y Proponer Descripción";
+    btn.textContent = "✨ STEP 3: Analyze Photo with Google Gemini";
   }
-}
-
-/**
- * Generate a strict image-to-image reference prompt for Google Flow (labs.google/fx/tools/flow).
- * Strictly preserves the railing style, geometry, and color while removing all environmental clutter.
- */
-function generateFlowPrompt(name, material, finishColor) {
-  const modelTitle = (name || "Architectural Railing System").trim();
-  const mat = (material || "Powder-Coated Aluminum / Steel").trim();
-  const col = (finishColor || "Matte Black").trim();
-  return (
-    `Commercial product catalog studio photograph based on the reference photo. ` +
-    `STRICTLY PRESERVE the exact architectural design, picket spacing, top rail profile, ` +
-    `mounting post geometry, and authentic ${col} finish of this ${modelTitle} (${mat}). ` +
-    `DO NOT alter, redesign, or replace the railing style. ` +
-    `ISOLATION: The railing must appear COMPLETELY ALONE on a seamless, pure solid white background (#FFFFFF). ` +
-    `ELIMINATE ALL environmental surroundings: NO concrete stairs, NO house siding, NO bricks, ` +
-    `NO scaffolding, NO caution tape, and NO ground dirt. ` +
-    `ONLY the isolated railing structure is present, centered with balanced padding and a very soft, ` +
-    `natural floor contact shadow directly under the mounting base plates. ` +
-    `Studio softbox lighting, razor-sharp architectural metalwork details, 8k resolution.`
-  );
 }
 
 /**
@@ -423,21 +448,17 @@ function parseStrictUserPrice(rawStr) {
   const cleaned = String(rawStr).replace(/[$,\s]/g, "");
   if (!cleaned) return null;
   if (!/^\d+(\.\d{1,2})?$/.test(cleaned)) {
-    throw new Error(`Precio inválido '${rawStr}'. Introduce únicamente números reales (ej. 54.00).`);
+    throw new Error(`Invalid price value '${rawStr}'. Please enter exact numerical values only (e.g. 54.00).`);
   }
   const num = parseFloat(cleaned);
-  if (num <= 0) throw new Error("El precio debe ser mayor que 0.");
+  if (num <= 0) throw new Error("Price must be greater than 0.");
   return num;
 }
 
 function saveCurrentProductToCatalog() {
-  const name = document.getElementById("prodName").value.trim();
-  if (!name) {
-    alert("Introduce el nombre del modelo o analízalo primero con Gemini.");
-    return;
-  }
+  const name = document.getElementById("prodName").value.trim() || DEFAULT_MODEL_NAME;
   if (!currentWhiteDataUrl) {
-    alert("Sube y procesa primero una fotografía sobre fondo blanco.");
+    alert("Please upload and process a railing photograph on a white background first.");
     return;
   }
 
@@ -454,26 +475,25 @@ function saveCurrentProductToCatalog() {
   }
 
   if (pricingMode === "per_linear_foot" && priceLf === null) {
-    alert("Seleccionaste 'Por Pie Lineal'. Introduce el precio exacto por pie lineal (no inventamos cifras).");
+    alert("You selected 'Per Linear Foot'. Please enter the exact price per linear foot.");
     return;
   }
   if (pricingMode === "per_kit" && priceKit === null) {
-    alert("Seleccionaste 'Por Kit'. Introduce el precio exacto por kit (no inventamos cifras).");
+    alert("You selected 'Per Full Kit'. Please enter the exact price per complete kit.");
     return;
   }
   if (pricingMode === "both" && (priceLf === null || priceKit === null)) {
-    alert("Seleccionaste 'Ambos'. Introduce tanto el precio por pie lineal como por kit.");
+    alert("You selected 'Both'. Please enter both the price per linear foot and per kit.");
     return;
   }
 
-  const sku = document.getElementById("prodSku").value.trim() || `NJF-${Math.floor(100 + Math.random() * 900)}`;
+  const currentSku = document.getElementById("prodSku").value.trim() || getNextSku("RS-");
   const item = {
-    sku,
+    sku: currentSku,
     name,
     category: document.getElementById("prodCategory").value,
-    material: document.getElementById("prodMaterial").value.trim(),
-    finish: document.getElementById("prodFinish").value.trim(),
-    descEs: document.getElementById("prodDescEs").value.trim(),
+    material: document.getElementById("prodMaterial").value.trim() || DEFAULT_MATERIAL,
+    finish: document.getElementById("prodFinish").value.trim() || DEFAULT_FINISH,
     descEn: document.getElementById("prodDescEn").value.trim(),
     features: document
       .getElementById("prodFeatures")
@@ -487,7 +507,7 @@ function saveCurrentProductToCatalog() {
     whiteImage: currentWhiteDataUrl,
   };
 
-  const idx = catalogItems.findIndex((x) => x.sku === item.sku);
+  const idx = catalogItems.findIndex((x) => x.sku.toLowerCase() === item.sku.toLowerCase());
   if (idx >= 0) {
     catalogItems[idx] = item;
   } else {
@@ -496,7 +516,12 @@ function saveCurrentProductToCatalog() {
 
   localStorage.setItem(CATALOG_STORAGE_KEY, JSON.stringify(catalogItems));
   renderCatalogList();
-  setStatus(`✅ Modelo '${item.name}' (${item.sku}) añadido al catálogo con sus precios exactos.`);
+
+  // Auto-increment to the next SKU (e.g. RS-1 -> RS-2 -> RS-3) for the next item
+  const nextSku = getNextSku("RS-");
+  document.getElementById("prodSku").value = nextSku;
+
+  setStatus(`✅ Product '${item.name}' [${item.sku}] saved to catalog. Next SKU automatically set to ${nextSku}.`);
 }
 
 function loadSavedCatalog() {
@@ -509,6 +534,8 @@ function loadSavedCatalog() {
     catalogItems = [];
   }
   renderCatalogList();
+  // Ensure the SKU input reflects the next available code on load
+  updateSkuFieldIfSequential();
 }
 
 function formatItemPricingText(item) {
@@ -517,16 +544,16 @@ function formatItemPricingText(item) {
     (item.pricingMode === "per_linear_foot" || item.pricingMode === "both") &&
     typeof item.priceLf === "number"
   ) {
-    parts.push(`$${item.priceLf.toFixed(2)} USD / Pie Lineal (LF)`);
+    parts.push(`$${item.priceLf.toFixed(2)} USD / Linear Foot (LF)`);
   }
   if (
     (item.pricingMode === "per_kit" || item.pricingMode === "both") &&
     typeof item.priceKit === "number"
   ) {
-    parts.push(`$${item.priceKit.toFixed(2)} USD / Kit Completo`);
+    parts.push(`$${item.priceKit.toFixed(2)} USD / Complete Kit`);
   }
   if (parts.length === 0) {
-    parts.push("Cotización Bajo Pedido / Price Upon Request");
+    parts.push("Price Upon Request");
   }
   return parts.join("  |  ");
 }
@@ -538,7 +565,7 @@ function renderCatalogList() {
 
   if (catalogItems.length === 0) {
     container.innerHTML =
-      '<p style="color:#a0aec0;font-size:0.9rem;">No hay productos en el catálogo todavía. Guarda un producto usando el formulario superior.</p>';
+      '<p style="color:#a0aec0;font-size:0.9rem;">No products in the catalog yet. Save a product using the form above.</p>';
     return;
   }
 
@@ -550,14 +577,16 @@ function renderCatalogList() {
       <div class="catalog-item-info">
         <h4>${index + 1}. ${item.name} [${item.sku}] — ${item.category}</h4>
         <div class="catalog-item-price">💲 ${formatItemPricingText(item)}</div>
-        <div style="font-size:0.82rem;color:#cbd5e0;">${item.descEs || item.descEn || ""}</div>
+        <div style="font-size:0.82rem;color:#cbd5e0;">Material: ${item.material} • Finish: ${item.finish}</div>
+        <div style="font-size:0.82rem;color:#a0aec0;margin-top:2px;">${item.descEn || ""}</div>
       </div>
-      <button class="btn btn-danger" data-sku="${item.sku}">🗑️ Eliminar</button>
+      <button class="btn btn-danger" data-sku="${item.sku}">🗑️ Delete</button>
     `;
     div.querySelector("button").addEventListener("click", () => {
       catalogItems = catalogItems.filter((x) => x.sku !== item.sku);
       localStorage.setItem(CATALOG_STORAGE_KEY, JSON.stringify(catalogItems));
       renderCatalogList();
+      updateSkuFieldIfSequential();
     });
     container.appendChild(div);
   });
@@ -565,7 +594,7 @@ function renderCatalogList() {
 
 async function exportCatalogPdf() {
   if (catalogItems.length === 0) {
-    alert("Añade al menos un producto al catálogo antes de generar el PDF.");
+    alert("Please add at least one product to the catalog before exporting the PDF.");
     return;
   }
 
@@ -574,7 +603,7 @@ async function exportCatalogPdf() {
   const pageW = doc.internal.pageSize.getWidth();
   const pageH = doc.internal.pageSize.getHeight();
 
-  // Corporate Header Banner
+  // Corporate Header Banner (English)
   doc.setFillColor(20, 28, 43);
   doc.rect(36, 32, pageW - 72, 74, "F");
   doc.setFillColor(200, 157, 69);
@@ -587,12 +616,12 @@ async function exportCatalogPdf() {
 
   doc.setTextColor(200, 157, 69);
   doc.setFontSize(11);
-  doc.text("Catálogo Oficial de Barandillas y Cercas / Product & Pricing Catalog", 50, 76);
+  doc.text("Official Product & Pricing Catalog", 50, 76);
 
   doc.setTextColor(226, 232, 240);
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
-  doc.text("New Jersey & New York Metro Area  |  sales@njfenceandrailing.com", 50, 93);
+  doc.text("New Jersey & New York Metro Area  |  sales@njfenceandrailing.com  |  (973) 555-0199", 50, 93);
 
   let y = 124;
 
@@ -617,7 +646,7 @@ async function exportCatalogPdf() {
 
     doc.setTextColor(74, 85, 104);
     doc.setFontSize(7.5);
-    doc.text(`SKU: ${item.sku} | FONDO BLANCO (#FFFFFF)`, 54, y + cardH - 15);
+    doc.text(`SKU: ${item.sku} | PURE WHITE BACKGROUND (#FFFFFF)`, 54, y + cardH - 15);
 
     // Product info on right
     const rx = 242;
@@ -634,7 +663,7 @@ async function exportCatalogPdf() {
     doc.setTextColor(36, 50, 74);
     doc.setFontSize(8.5);
     doc.text(
-      `Categoría: ${item.category}  •  Material: ${item.material || "N/A"}  •  Acabado: ${item.finish || "N/A"}`,
+      `Category: ${item.category}  •  Material: ${item.material || "Metal or Aluminum"}  •  Finish: ${item.finish || "Any Color Powder coating"}`,
       rx,
       ry
     );
@@ -643,36 +672,53 @@ async function exportCatalogPdf() {
     doc.setTextColor(26, 32, 44);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8.8);
-    if (item.descEs) {
-      const esLines = doc.splitTextToSize(`ES: ${item.descEs}`, maxW);
-      doc.text(esLines.slice(0, 3), rx, ry);
-      ry += Math.min(3, esLines.length) * 11 + 4;
-    }
     if (item.descEn) {
-      const enLines = doc.splitTextToSize(`EN: ${item.descEn}`, maxW);
+      const enLines = doc.splitTextToSize(item.descEn, maxW);
       doc.text(enLines.slice(0, 3), rx, ry);
-      ry += Math.min(3, enLines.length) * 11 + 6;
+      ry += Math.min(3, enLines.length) * 11 + 4;
     }
 
-    // Strict Pricing Box
-    doc.setFillColor(255, 253, 247);
+    // Pricing box
     doc.setDrawColor(212, 175, 55);
-    doc.rect(rx, y + cardH - 52, maxW, 42, "FD");
+    doc.setFillColor(255, 253, 247);
+    const priceBoxH = item.kitNote ? 48 : 34;
+    doc.rect(rx, ry + 2, maxW, priceBoxH, "FD");
 
-    doc.setTextColor(20, 28, 43);
+    doc.setTextColor(36, 50, 74);
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(10.5);
-    doc.text(formatItemPricingText(item), rx + 10, y + cardH - 32);
+    doc.setFontSize(8);
+    doc.text("PRICING SPECIFICATION:", rx + 8, ry + 14);
+
+    doc.setTextColor(183, 121, 31);
+    doc.setFontSize(9);
+    doc.text(formatItemPricingText(item), rx + 8, ry + 27);
 
     if (item.kitNote) {
-      doc.setFont("helvetica", "italic");
-      doc.setFontSize(8);
       doc.setTextColor(74, 85, 104);
-      doc.text(`Nota: ${item.kitNote.substring(0, 85)}`, rx + 10, y + cardH - 17);
+      doc.setFont("helvetica", "italic");
+      doc.setFontSize(7.5);
+      doc.text(`Includes: ${item.kitNote}`, rx + 8, ry + 41);
     }
 
-    y += cardH + 14;
+    y += cardH + 12;
   });
 
-  doc.save("NJ_Fence_and_Railing_Catalog.pdf");
+  // Footer on each page
+  const pageCount = doc.internal.getNumberOfPages();
+  for (let i = 1; i <= pageCount; i++) {
+    doc.setPage(i);
+    doc.setDrawColor(200, 157, 69);
+    doc.line(36, pageH - 32, pageW - 36, pageH - 32);
+    doc.setFontSize(7.5);
+    doc.setTextColor(113, 128, 150);
+    doc.text(
+      "NJ Fence and Railing • Exact USD Pricing • Taxes and installation quoted per site measurements.",
+      36,
+      pageH - 20
+    );
+    doc.text(`Page ${i} of ${pageCount}`, pageW - 80, pageH - 20);
+  }
+
+  doc.save("NJ_Fence_and_Railing_Product_Catalog.pdf");
+  setStatus("📄 Official PDF Catalog downloaded successfully.");
 }

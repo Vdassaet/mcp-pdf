@@ -1,54 +1,28 @@
 [
   {
-    "id": "NJF-201",
-    "sku": "NJF-201",
-    "name": "Architectural Prestige Picket Railing / Barandilla Arquitectónica de Piquetes Prestige",
+    "id": "NJF-D735FD",
+    "sku": "RS-1",
+    "name": "Modern Black  Stair and Porch RG Railing Style",
     "category": "Aluminum Railing",
-    "material": "Powder-Coated Aluminum / Aluminio Recubierto en Polvo",
-    "finish_color": "Matte Black with Gold Accents / Negro Mate con Detalles Dorados",
-    "description_es": "Sistema de barandilla arquitectónica de alta gama con piquetes verticales, aros superiores decorativos y detalles dorados en los nudos centrales. Fabricado en aluminio con recubrimiento en polvo duradero, es ideal para mejorar la seguridad y estética de porches, balcones y terrazas residenciales o comerciales en Nueva Jersey y Nueva York.",
-    "description_en": "High-end architectural railing system featuring vertical pickets, decorative upper rings, and gold-accented center knuckles. Constructed from durable powder-coated aluminum, it is ideal for enhancing the safety and aesthetics of residential or commercial porches, balconies, and decks across New Jersey and New York.",
+    "material": "Metal or Aluminum",
+    "finish_color": "Any Color Powder coating",
+    "description_es": "Esta robusta barandilla metálica para escaleras exteriores ofrece una solución de seguridad moderna y duradera para aplicaciones residenciales y comerciales en Nueva Jersey y Nueva York.",
+    "description_en": "Modern architectural stair and porch railing system engineered with clean vertical pickets, contoured top handrail, and heavy-duty square mounting posts. Designed for lasting exterior durability and code-compliant safety across New Jersey and New York residences and commercial properties.",
     "features": [
-      "Decorative upper rings and gold-accented center knuckles / Aros superiores decorativos y nudos centrales con detalles dorados",
-      "Heavy-duty powder-coated aluminum construction / Construcción de aluminio de alta resistencia con recubrimiento en polvo",
-      "Substantial structural corner/end posts with pyramidal caps / Postes estructurales robustos con tapas piramidales",
-      "Suitable for both residential and commercial applications / Adecuado para aplicaciones residenciales y comerciales"
+      "Heavy-duty metal/aluminum construction for maximum safety",
+      "Durable powder-coated finish resistant to weather elements",
+      "Secure surface-mount installation on concrete stairs and porches",
+      "Compliant picket spacing for residential and commercial building codes"
     ],
     "pricing_mode": "both",
     "price_per_linear_ft": 54.0,
     "price_per_kit": 345.0,
-    "kit_includes_note": "Kit de sección de 6 pies (36\" de altura) incluye riel superior/inferior, barrotes y soportes.",
-    "original_image_path": "E:\\mcp\\data\\photos_raw\\NJF-201_raw.jpg",
-    "white_bg_image_path": "E:\\mcp\\data\\photos_white\\NJF-201_white.png",
-    "bg_processing_mode": "auto_isolate_white",
-    "ai_source": "Gemini API Directa (gemini-3.5-flash-lite)",
-    "flow_prompt_suggestion": "Photorealistic architectural studio render of a black powder-coated aluminum railing with vertical pickets, decorative top rings, and gold-accented center knuckles between two heavy square posts, set against a clean neutral background, highly detailed metal texture, professional architectural lighting.",
-    "created_at": "2026-10-27 09:57"
-  },
-  {
-    "id": "NJF-D735FD",
-    "sku": "NJF-STR-01",
-    "name": "Architectural Black Metal Stair Railing / Barandilla Metálica Negra Arquitectónica para Escaleras",
-    "category": "Aluminum Railing",
-    "material": "Powder-Coated Steel / Acero Galvanizado Recubierto de Polvo",
-    "finish_color": "Matte Black / Negro Mate",
-    "description_es": "Esta robusta barandilla metálica para escaleras exteriores ofrece una solución de seguridad moderna y duradera para aplicaciones residenciales y comerciales en Nueva Jersey y Nueva York. Fabricada con montantes verticales limpios y un pasamanos superior contorneado, proporciona un soporte estructural firme y un acabado estético limpio que se integra perfectamente con exteriores de estuco y revestimiento vinílico.",
-    "description_en": "This robust exterior metal stair railing offers a modern, durable safety solution for residential and commercial applications across New Jersey and New York. Featuring clean vertical balusters and a contoured top handrail, it provides sturdy structural support and a clean aesthetic finish that integrates seamlessly with siding and stucco exteriors.",
-    "features": [
-      "Heavy-duty steel construction for maximum safety / Construcción de acero de alta resistencia para máxima seguridad",
-      "Durable matte black powder-coated finish resistant to weather elements / Acabado en polvo negro mate resistente a la intemperie",
-      "Secure surface-mount installation on concrete stairs / Instalación segura de montaje en superficie sobre escaleras de concreto",
-      "Compliant picket spacing for residential and commercial building codes / Espaciamiento de barrotes conforme a los códigos de construcción"
-    ],
-    "pricing_mode": "per_linear_foot",
-    "price_per_linear_ft": 62.0,
-    "price_per_kit": 420.0,
-    "kit_includes_note": "Incluye pasamanos inclinado de 6 pies, riel inferior, barrotes verticales, 2 postes de anclaje y tornillería de acero inoxidable.",
+    "kit_includes_note": "6 ft section includes top/bottom rails, vertical pickets, 2 anchor posts, and stainless steel hardware.",
     "original_image_path": "E:/mcp/data/photos_raw/NJF-D735FD_raw.jpeg",
     "white_bg_image_path": "E:/mcp/data/photos_white/NJF-D735FD_white.png",
     "bg_processing_mode": "studio_catalog_render",
     "ai_source": "Gemini API Directa (gemini-3.5-flash-lite)",
-    "flow_prompt_suggestion": "Architectural photograph of a modern black metal stair railing installed on durable concrete exterior steps alongside a clean white siding house, bright daylight, professional architectural catalog showcase, photorealistic, 8k resolution.",
-    "created_at": "2026-10-27 10:29"
+    "flow_prompt_suggestion": "Commercial product catalog studio photograph based on the reference photo. STRICTLY PRESERVE the exact architectural design, picket spacing, top rail profile, mounting post geometry, and authentic Any Color Powder coating finish of this Modern Black  Stair and Porch RG Railing Style (Metal or Aluminum). DO NOT alter, redesign, or replace the railing style. ISOLATION: The railing must appear COMPLETELY ALONE on a seamless, pure solid white background (#FFFFFF). ELIMINATE ALL environmental surroundings: NO concrete stairs, NO house siding, NO bricks, NO scaffolding, NO caution tape, and NO ground dirt. ONLY the isolated railing structure is present, centered with balanced padding and a very soft, natural floor contact shadow directly under the mounting base plates. Studio softbox lighting, razor-sharp architectural metalwork details, 8k resolution.",
+    "created_at": "2026-10-27 11:39"
   }
 ]
