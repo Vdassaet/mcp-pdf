@@ -470,3 +470,26 @@ def open_google_flow_in_browser() -> None:
 def open_ai_studio_key_page() -> None:
     """Open Google AI Studio API Key page in the user's default browser."""
     webbrowser.open(GOOGLE_AI_STUDIO_KEY_URL)
+
+
+def save_gemini_api_key_to_env(api_key: str) -> Path:
+    """
+    Safely store GEMINI_API_KEY in the local `e:\\mcp\\.env` file (which is git-ignored)
+    and update the current process environment.
+    """
+    cleaned = api_key.strip().strip('"').strip("'")
+    if not cleaned:
+        raise ValueError("La API Key está vacía.")
+
+    env_path = Path(__file__).resolve().parent.parent / ".env"
+    lines: List[str] = []
+    if env_path.exists():
+        for line in env_path.read_text(encoding="utf-8", errors="ignore").splitlines():
+            if not line.strip().startswith("GEMINI_API_KEY="):
+                lines.append(line)
+
+    lines.append(f"GEMINI_API_KEY={cleaned}")
+    env_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    os.environ["GEMINI_API_KEY"] = cleaned
+    return env_path
+

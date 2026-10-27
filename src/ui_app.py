@@ -23,6 +23,7 @@ from src.google_integrations import (
     generate_image_via_official_genai_api,
     open_ai_studio_key_page,
     open_google_flow_in_browser,
+    save_gemini_api_key_to_env,
 )
 from src.image_processor import (
     create_sample_railing_photo,
@@ -714,11 +715,43 @@ class NJFenceCatalogApp(ctk.CTk):
 
         ctk.CTkButton(
             top_diag,
-            text="🔑 Obtener API Key Gratuita (AI Studio)",
+            text="🔑 1. Abrir Google AI Studio (Crear Key)",
             command=open_ai_studio_key_page,
-            fg_color="#4A5568",
-            width=230,
+            fg_color="#D69E2E",
+            hover_color="#B7791F",
+            text_color="#1A202C",
+            font=ctk.CTkFont(weight="bold"),
+            width=245,
         ).pack(side="right")
+
+        key_box = ctk.CTkFrame(diag_frame, border_width=1, border_color="#ECC94B")
+        key_box.pack(fill="x", padx=6, pady=6)
+
+        ctk.CTkLabel(
+            key_box,
+            text="Configurar tu GEMINI_API_KEY (Se guarda de forma segura en E:\\mcp\\.env, fuera de GitHub):",
+            font=ctk.CTkFont(size=12, weight="bold"),
+            text_color="#F6E05E",
+        ).pack(anchor="w", padx=10, pady=(8, 2))
+
+        key_row = ctk.CTkFrame(key_box, fg_color="transparent")
+        key_row.pack(fill="x", padx=10, pady=(2, 8))
+
+        self.entry_api_key = ctk.CTkEntry(
+            key_row,
+            placeholder_text="Pega aquí tu clave AIzaSy... de Google AI Studio",
+            show="*",
+        )
+        self.entry_api_key.pack(side="left", fill="x", expand=True, padx=(0, 6))
+
+        ctk.CTkButton(
+            key_row,
+            text="💾 Guardar API Key",
+            command=self.on_save_api_key,
+            fg_color="#38A169",
+            hover_color="#2F855A",
+            width=150,
+        ).pack(side="left")
 
         self.integrations_container = ctk.CTkFrame(diag_frame, fg_color="transparent")
         self.integrations_container.pack(fill="both", expand=True, padx=4, pady=6)
@@ -1116,6 +1149,26 @@ class NJFenceCatalogApp(ctk.CTk):
             messagebox.showinfo("Imagen generada", f"Imagen generada con Imagen 3 y procesada:\n{generated}")
         except Exception as exc:
             messagebox.showwarning("Integración Imagen 3 API", str(exc))
+
+    def on_save_api_key(self) -> None:
+        raw_key = self.entry_api_key.get().strip()
+        if not raw_key:
+            messagebox.showwarning("Clave vacía", "Pega tu GEMINI_API_KEY (empieza por AIzaSy...) antes de guardar.")
+            return
+        try:
+            env_file = save_gemini_api_key_to_env(raw_key)
+            self.entry_api_key.delete(0, "end")
+            self._refresh_integrations_report_ui()
+            self.ai_status_lbl.configure(
+                text="✅ GEMINI_API_KEY guardada en .env. Análisis instantáneo (1-2s) activado.",
+                text_color="#68D391",
+            )
+            messagebox.showinfo(
+                "API Key Guardada",
+                f"Tu GEMINI_API_KEY se guardó de forma segura en:\n{env_file}\n\n(Este archivo está en .gitignore y nunca se sube a GitHub).",
+            )
+        except Exception as exc:
+            messagebox.showerror("Error al guardar API Key", str(exc))
 
     def _refresh_integrations_report_ui(self) -> None:
         for child in self.integrations_container.winfo_children():
