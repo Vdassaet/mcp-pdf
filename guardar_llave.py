@@ -12,7 +12,7 @@ from src.google_integrations import save_gemini_api_key_to_env
 def try_get_clipboard_aiza(root: tk.Tk) -> str:
     try:
         clip = root.clipboard_get().strip()
-        if clip.startswith("AIza") and len(clip) >= 30:
+        if (clip.startswith("AIza") or clip.startswith("AQ.")) and len(clip) >= 25 and " " not in clip:
             return clip
     except Exception:
         pass

@@ -298,7 +298,7 @@ def _strip_any_invented_prices(text: str) -> str:
 def analyze_with_gemini_api_key(image_path: str | Path, api_key: str) -> Dict[str, Any]:
     """
     Analyze a railing/fence photograph directly using the official `google-genai` SDK
-    (`gemini-2.5-flash`).
+    (`gemini-3.8-flash`).
     """
     from google import genai
 
@@ -307,17 +307,34 @@ def analyze_with_gemini_api_key(image_path: str | Path, api_key: str) -> Dict[st
     pil_img = Image.open(img_path)
 
     prompt = _build_analysis_prompt(img_path)
-    response = client.models.generate_content(
-        model="gemini-2.5-flash",
-        contents=[pil_img, prompt],
-    )
+    candidate_models = [
+        "gemini-3.5-flash-lite",
+        "gemini-3.1-flash-lite",
+        "gemini-3.5-flash",
+        "gemini-3-flash-preview",
+    ]
+    last_err: Optional[Exception] = None
+    response = None
+    model_used = candidate_models[0]
+    for m in candidate_models:
+        try:
+            model_used = m
+            response = client.models.generate_content(
+                model=m,
+                contents=[pil_img, prompt],
+            )
+            break
+        except Exception as exc:
+            last_err = exc
+    if response is None:
+        raise RuntimeError(f"Error al llamar a Gemini API: {last_err}")
     parsed = _extract_json_from_text(response.text or "")
     if not parsed:
         raise RuntimeError(f"Gemini API no devolvió un JSON válido: {response.text}")
 
     parsed["description_es"] = _strip_any_invented_prices(str(parsed.get("description_es", "")))
     parsed["description_en"] = _strip_any_invented_prices(str(parsed.get("description_en", "")))
-    parsed["ai_source"] = "Gemini API Directa (gemini-2.5-flash)"
+    parsed["ai_source"] = f"Gemini API Directa ({model_used})"
     return parsed
 
 
@@ -480,9 +497,9 @@ def save_gemini_api_key_to_env(api_key: str) -> Path:
     cleaned = api_key.strip().strip('"').strip("'")
     if not cleaned:
         raise ValueError("La API Key está vacía.")
-    if not cleaned.startswith("AIza") or len(cleaned) < 30:
+    if len(cleaned) < 25 or " " in cleaned:
         raise ValueError(
-            "El texto pegado no parece una clave de Google AI Studio válida (las claves de Gemini siempre empiezan por 'AIza...'). "
+            "El texto pegado no parece una clave de Google AI Studio válida. "
             "Primero copia la clave desde Google AI Studio haciendo clic en el icono de copiar (dos cuadritos) y vuelve a pegarla."
         )
 

@@ -27,7 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
 function initVaultStatus() {
   const savedKey = localStorage.getItem(VAULT_KEY_NAME);
   const badge = document.getElementById("vaultStatusText");
-  if (savedKey && savedKey.startsWith("AIza")) {
+  if (savedKey && savedKey.length >= 25) {
     badge.innerHTML =
       "🟢 <strong>Llave Gemini guardada en tu navegador (Privada):</strong> Lista para analizar fotos (0 llaves en GitHub).";
   } else {
@@ -334,7 +334,7 @@ async function analyzeCurrentImageWithGemini() {
       "Return ONLY a JSON object with keys: name, category, material, finish_color, description_es, description_en, features (array of 4 strings), flow_prompt_suggestion.";
 
     const resp = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(apiKey)}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${encodeURIComponent(apiKey)}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },

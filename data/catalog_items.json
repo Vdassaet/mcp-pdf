@@ -2,17 +2,17 @@
   {
     "id": "NJF-201",
     "sku": "NJF-201",
-    "name": "Architectural Matte Black Ornamental Picket Railing / Barandilla Ornamental Negra",
+    "name": "Architectural Prestige Picket Railing / Barandilla Arquitectónica de Piquetes Prestige",
     "category": "Aluminum Railing",
-    "material": "Powder-Coated Architectural Aluminum / Aluminio Termolacado",
-    "finish_color": "Matte Black with Gold Knuckle Accents",
-    "description_es": "Barandilla arquitectónica de barrotes verticales con canal superior decorativo de anillos y postes cuadrados reforzados con remate piramidal. Diseñada para balcones, porches y escaleras exteriores de alta durabilidad en climas de New Jersey y New York.",
-    "description_en": "Architectural vertical-picket railing featuring an ornamental top ring channel and heavy-duty square newel posts with pyramid caps. Engineered for residential and commercial decks, balconies, and stairs across New Jersey and New York.",
+    "material": "Powder-Coated Aluminum / Aluminio Recubierto en Polvo",
+    "finish_color": "Matte Black with Gold Accents / Negro Mate con Detalles Dorados",
+    "description_es": "Sistema de barandilla arquitectónica de alta gama con piquetes verticales, aros superiores decorativos y detalles dorados en los nudos centrales. Fabricado en aluminio con recubrimiento en polvo duradero, es ideal para mejorar la seguridad y estética de porches, balcones y terrazas residenciales o comerciales en Nueva Jersey y Nueva York.",
+    "description_en": "High-end architectural railing system featuring vertical pickets, decorative upper rings, and gold-accented center knuckles. Constructed from durable powder-coated aluminum, it is ideal for enhancing the safety and aesthetics of residential or commercial porches, balconies, and decks across New Jersey and New York.",
     "features": [
-      "Postes estructurales cuadrados con tapa piramidal y base de anclaje reforzada",
-      "Canal superior decorativo con anillos ornamentales y detalles centrales",
-      "Acabado negro mate resistente a la corrosión e intemperie (NJ/NY)",
-      "Fotografía procesada sobre fondo blanco puro (#FFFFFF) para catálogo"
+      "Decorative upper rings and gold-accented center knuckles / Aros superiores decorativos y nudos centrales con detalles dorados",
+      "Heavy-duty powder-coated aluminum construction / Construcción de aluminio de alta resistencia con recubrimiento en polvo",
+      "Substantial structural corner/end posts with pyramidal caps / Postes estructurales robustos con tapas piramidales",
+      "Suitable for both residential and commercial applications / Adecuado para aplicaciones residenciales y comerciales"
     ],
     "pricing_mode": "both",
     "price_per_linear_ft": 54.0,
@@ -21,8 +21,8 @@
     "original_image_path": "E:\\mcp\\data\\photos_raw\\NJF-201_raw.jpg",
     "white_bg_image_path": "E:\\mcp\\data\\photos_white\\NJF-201_white.png",
     "bg_processing_mode": "auto_isolate_white",
-    "ai_source": "Cuenta Personal Google en Antigravity",
-    "flow_prompt_suggestion": "Studio product photography and architectural showcase of a Architectural Matte Black Ornamental Picket Railing (Aluminum Railing), crafted from Powder-Coated Aluminum in a Matte Black finish. Crisp vertical balusters, structural top and bottom rails, square newel posts with pyramid caps, isolated on a pure seamless white studio background (#FFFFFF), even softbox commercial catalog lighting, ultra-sharp architectural metalwork details, 8k resolution.",
-    "created_at": "2026-10-27 09:21"
+    "ai_source": "Gemini API Directa (gemini-3.5-flash-lite)",
+    "flow_prompt_suggestion": "Photorealistic architectural studio render of a black powder-coated aluminum railing with vertical pickets, decorative top rings, and gold-accented center knuckles between two heavy square posts, set against a clean neutral background, highly detailed metal texture, professional architectural lighting.",
+    "created_at": "2026-10-27 09:57"
   }
 ]
