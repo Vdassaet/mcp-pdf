@@ -57,6 +57,7 @@ class ProductItem:
     description_es: str = ""
     description_en: str = ""
     features: List[str] = field(default_factory=list)
+    specifications: Dict[str, str] = field(default_factory=dict)
 
     # Strict User-Entered Pricing (Never invented by AI)
     pricing_mode: str = PricingMode.PER_LINEAR_FOOT.value

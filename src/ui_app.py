@@ -78,6 +78,41 @@ ENGINE_MAP = {
     "Gemini API Key Directa (`google-genai` — Google AI Studio)": "gemini_api_key",
 }
 
+DEFAULT_SPEC_FIELDS = [
+    (
+        "Post Type",
+        ["", "Square Post", "Round Post", "Flanged Surface Mount Post", "Core-Drilled Post", "Heavy-Duty Base Post"],
+    ),
+    (
+        "Top Cap / Top Molding Type",
+        ["", "Flat Top", "Decorative Top", "Molded Handrail Cap", "Pyramid Cap", "Continuous Top Rail"],
+    ),
+    (
+        "Bottom Channel Type",
+        ["", "Standard Bottom Channel", "Wide Bottom Channel", "Slotted Bottom Channel", "Flush Bottom Rail"],
+    ),
+    (
+        "Spindle Type",
+        ["", "Square Spindles", "Round Spindles", "Twisted Spindles", "Basket Spindles", "Rectangular Pickets"],
+    ),
+    (
+        "Railing Style",
+        ["", "Traditional Vertical Picket", "Vertical Picket Railing", "Horizontal Railing", "Modern Architectural", "Stair and Porch Railing"],
+    ),
+    (
+        "Railing Height",
+        ["", "36 inches", "42 inches", '36"', '42"', "48 inches"],
+    ),
+    (
+        "Material",
+        ["", "Aluminum", "Metal or Aluminum", "Wrought Iron / Steel", "Stainless Steel", "Powder-Coated Aluminum"],
+    ),
+    (
+        "Finish / Color",
+        ["", "Black Powder Coated", "Any Color Powder coating", "Matte Black", "Gloss Black", "Bronze", "White"],
+    ),
+]
+
 
 class NJFenceCatalogApp(ctk.CTk):
     """Main Desktop Window for NJ Fence and Railing PDF Catalog Generator."""
@@ -98,6 +133,9 @@ class NJFenceCatalogApp(ctk.CTk):
         self.current_white_path: Optional[Path] = None
         self.current_ai_source: str = "manual"
         self.last_generated_pdf: Optional[Path] = None
+
+        self.default_spec_combos: Dict[str, ctk.CTkComboBox] = {}
+        self.extra_spec_rows: List[Dict[str, Any]] = []
 
         self._build_top_bar()
         self._build_tabs()
@@ -360,12 +398,88 @@ class NJFenceCatalogApp(ctk.CTk):
         self.txt_desc_en = ctk.CTkTextbox(right, height=72)
         self.txt_desc_en.pack(fill="x", padx=4, pady=2)
 
+        # --------------------------------------------------------------
+        # RAILING SPECIFICATIONS SECTION (Style & Construction Details)
+        # --------------------------------------------------------------
+        specs_box = ctk.CTkFrame(right, border_width=1, border_color="#4A5568")
+        specs_box.pack(fill="x", padx=4, pady=(8, 4))
+
+        ctk.CTkLabel(
+            specs_box,
+            text="📋 PRODUCT SPECIFICATIONS (STYLE & CONSTRUCTION DETAILS)",
+            font=ctk.CTkFont(size=12, weight="bold"),
+            text_color="#F6E05E",
+        ).pack(anchor="w", padx=10, pady=(8, 2))
+
+        ctk.CTkLabel(
+            specs_box,
+            text="Exact railing style and construction specifications for the PDF catalog. Empty fields are hidden automatically.",
+            font=ctk.CTkFont(size=11),
+            text_color="#CBD5E0",
+        ).pack(anchor="w", padx=10, pady=(0, 6))
+
+        # 8 Default Specification Fields (2 columns x 4 rows)
+        default_specs_grid = ctk.CTkFrame(specs_box, fg_color="transparent")
+        default_specs_grid.pack(fill="x", padx=10, pady=2)
+        default_specs_grid.grid_columnconfigure(0, weight=1)
+        default_specs_grid.grid_columnconfigure(1, weight=1)
+
+        field_pairs = [
+            (DEFAULT_SPEC_FIELDS[0], DEFAULT_SPEC_FIELDS[4]),  # Post Type | Railing Style
+            (DEFAULT_SPEC_FIELDS[1], DEFAULT_SPEC_FIELDS[5]),  # Top Cap / Top Molding Type | Railing Height
+            (DEFAULT_SPEC_FIELDS[2], DEFAULT_SPEC_FIELDS[6]),  # Bottom Channel Type | Material
+            (DEFAULT_SPEC_FIELDS[3], DEFAULT_SPEC_FIELDS[7]),  # Spindle Type | Finish / Color
+        ]
+
+        for r_idx, (left_spec, right_spec) in enumerate(field_pairs):
+            f_name_l, f_vals_l = left_spec
+            cell_l = ctk.CTkFrame(default_specs_grid, fg_color="transparent")
+            cell_l.grid(row=r_idx, column=0, sticky="ew", padx=(0, 6), pady=3)
+            ctk.CTkLabel(
+                cell_l,
+                text=f"{f_name_l}:",
+                font=ctk.CTkFont(size=11, weight="bold"),
+            ).pack(anchor="w", pady=(0, 1))
+            combo_l = ctk.CTkComboBox(cell_l, values=f_vals_l, height=28)
+            combo_l.set("")
+            combo_l.pack(fill="x")
+            self.default_spec_combos[f_name_l] = combo_l
+
+            f_name_r, f_vals_r = right_spec
+            cell_r = ctk.CTkFrame(default_specs_grid, fg_color="transparent")
+            cell_r.grid(row=r_idx, column=1, sticky="ew", padx=(6, 0), pady=3)
+            ctk.CTkLabel(
+                cell_r,
+                text=f"{f_name_r}:",
+                font=ctk.CTkFont(size=11, weight="bold"),
+            ).pack(anchor="w", pady=(0, 1))
+            combo_r = ctk.CTkComboBox(cell_r, values=f_vals_r, height=28)
+            combo_r.set("")
+            combo_r.pack(fill="x")
+            self.default_spec_combos[f_name_r] = combo_r
+
+        # Extra Specifications Container
+        self.extra_specs_container = ctk.CTkFrame(specs_box, fg_color="transparent")
+        self.extra_specs_container.pack(fill="x", padx=10, pady=(4, 2))
+
+        # + Add Extra Specification Button
+        ctk.CTkButton(
+            specs_box,
+            text="➕ Add Extra Specification",
+            command=self.on_add_extra_spec,
+            fg_color="#2B6CB0",
+            hover_color="#2C5282",
+            height=28,
+            font=ctk.CTkFont(size=11, weight="bold"),
+        ).pack(anchor="w", padx=10, pady=(6, 10))
+
+        # Observable Specifications / Notes
         ctk.CTkLabel(
             right,
-            text="Características Observables (1 por línea):",
+            text="Observable Specifications (1 per line):",
             font=ctk.CTkFont(weight="bold"),
         ).pack(anchor="w", padx=4, pady=(6, 2))
-        self.txt_features = ctk.CTkTextbox(right, height=62)
+        self.txt_features = ctk.CTkTextbox(right, height=54)
         self.txt_features.pack(fill="x", padx=4, pady=2)
 
         # STRICT PRICING SECTION (Never invent numbers)
@@ -893,6 +1007,148 @@ class NJFenceCatalogApp(ctk.CTk):
         self.ai_status_lbl.configure(text=f"⚠️ {err_msg}", text_color="#FC8181")
         messagebox.showerror("Error en Análisis Gemini", err_msg)
 
+    # ------------------------------------------------------------------
+    # Railing Specifications Handlers
+    # ------------------------------------------------------------------
+    def on_add_extra_spec(self, name: str = "", value: str = "") -> None:
+        row = ctk.CTkFrame(self.extra_specs_container, fg_color="transparent")
+        row.pack(fill="x", pady=2)
+        row.grid_columnconfigure(0, weight=2)
+        row.grid_columnconfigure(1, weight=3)
+
+        name_entry = ctk.CTkEntry(row, placeholder_text="Spec Name (e.g. Spindle Spacing)", height=28)
+        if name:
+            name_entry.insert(0, str(name))
+        name_entry.grid(row=0, column=0, sticky="ew", padx=(0, 4))
+
+        val_entry = ctk.CTkEntry(row, placeholder_text="Specification Value (e.g. 4 inches)", height=28)
+        if value:
+            val_entry.insert(0, str(value))
+        val_entry.grid(row=0, column=1, sticky="ew", padx=(0, 4))
+
+        btn_del = ctk.CTkButton(
+            row,
+            text="✕ Remove",
+            fg_color="#C53030",
+            hover_color="#9B2C2C",
+            width=72,
+            height=28,
+            command=lambda r=row: self._remove_extra_spec_row(r),
+        )
+        btn_del.grid(row=0, column=2, padx=(0, 0))
+
+        self.extra_spec_rows.append({"frame": row, "name_entry": name_entry, "val_entry": val_entry})
+
+    def _remove_extra_spec_row(self, target_row: ctk.CTkFrame) -> None:
+        for idx, row_dict in enumerate(list(self.extra_spec_rows)):
+            if row_dict["frame"] == target_row:
+                try:
+                    target_row.destroy()
+                except Exception:
+                    pass
+                self.extra_spec_rows.pop(idx)
+                break
+
+    def get_current_specifications(self) -> Dict[str, str]:
+        specs: Dict[str, str] = {}
+        for f_name, _ in DEFAULT_SPEC_FIELDS:
+            combo = self.default_spec_combos.get(f_name)
+            if combo:
+                val = combo.get().strip()
+                if val:
+                    specs[f_name] = val
+
+        for row_dict in self.extra_spec_rows:
+            s_name = row_dict["name_entry"].get().strip()
+            s_val = row_dict["val_entry"].get().strip()
+            if s_name and s_val:
+                specs[s_name] = s_val
+
+        return specs
+
+    def set_specifications(self, specs: Dict[str, str]) -> None:
+        for f_name, _ in DEFAULT_SPEC_FIELDS:
+            combo = self.default_spec_combos.get(f_name)
+            if combo:
+                combo.set("")
+
+        for row_dict in list(self.extra_spec_rows):
+            try:
+                row_dict["frame"].destroy()
+            except Exception:
+                pass
+        self.extra_spec_rows.clear()
+
+        if not specs or not isinstance(specs, dict):
+            return
+
+        for f_name, _ in DEFAULT_SPEC_FIELDS:
+            combo = self.default_spec_combos.get(f_name)
+            if combo and f_name in specs:
+                combo.set(str(specs[f_name]))
+
+        default_names = {f[0] for f in DEFAULT_SPEC_FIELDS}
+        for k, v in specs.items():
+            if k not in default_names:
+                self.on_add_extra_spec(name=k, value=str(v))
+
+    def load_product_into_editor(self, item: ProductItem) -> None:
+        self.current_item_id = item.id
+        self.current_raw_path = Path(item.original_image_path) if item.original_image_path else None
+        self.current_white_path = Path(item.white_bg_image_path) if item.white_bg_image_path else None
+        self.current_ai_source = item.ai_source or "manual"
+
+        self.entry_sku.delete(0, "end")
+        self.entry_sku.insert(0, item.sku or item.id)
+
+        self.entry_name.delete(0, "end")
+        self.entry_name.insert(0, item.name)
+
+        if item.category in CATEGORIES:
+            self.cat_var.set(item.category)
+
+        self.entry_material.delete(0, "end")
+        self.entry_material.insert(0, item.material)
+
+        self.entry_finish.delete(0, "end")
+        self.entry_finish.insert(0, item.finish_color)
+
+        self.txt_desc_es.delete("1.0", "end")
+        self.txt_desc_es.insert("1.0", item.description_es)
+
+        self.txt_desc_en.delete("1.0", "end")
+        self.txt_desc_en.insert("1.0", item.description_en)
+
+        self.txt_features.delete("1.0", "end")
+        self.txt_features.insert("1.0", "\n".join(item.features))
+
+        # Restore product-specific specifications
+        self.set_specifications(getattr(item, "specifications", {}))
+
+        # Restore pricing
+        for mode_label, mode_val in PRICING_MODE_MAP.items():
+            if mode_val == item.pricing_mode:
+                self.pricing_mode_var.set(mode_label)
+                break
+
+        self.entry_price_lf.delete(0, "end")
+        if item.price_per_linear_ft is not None:
+            self.entry_price_lf.insert(0, f"{item.price_per_linear_ft:.2f}")
+
+        self.entry_price_kit.delete(0, "end")
+        if item.price_per_kit is not None:
+            self.entry_price_kit.insert(0, f"{item.price_per_kit:.2f}")
+
+        self.entry_kit_note.delete(0, "end")
+        self.entry_kit_note.insert(0, item.kit_includes_note)
+
+        self._update_image_previews()
+        self.tabview.set("1. Subir Foto, Procesar Fondo Blanco y Precios")
+        self.ai_status_lbl.configure(
+            text=f"✅ Producto '{item.name}' [{item.sku}] cargado en el editor con sus especificaciones independientes.",
+            text_color="#68D391",
+        )
+
     def on_save_product_to_catalog(self) -> None:
         name = self.entry_name.get().strip()
         if not name:
@@ -944,6 +1200,17 @@ class NJFenceCatalogApp(ctk.CTk):
         features_raw = self.txt_features.get("1.0", "end").splitlines()
         features_list = [f.strip().lstrip("•- ") for f in features_raw if f.strip()]
 
+        item_specs = self.get_current_specifications()
+        if "Material" in item_specs and not self.entry_material.get().strip():
+            self.entry_material.insert(0, item_specs["Material"])
+        elif self.entry_material.get().strip() and "Material" not in item_specs:
+            item_specs["Material"] = self.entry_material.get().strip()
+
+        if "Finish / Color" in item_specs and not self.entry_finish.get().strip():
+            self.entry_finish.insert(0, item_specs["Finish / Color"])
+        elif self.entry_finish.get().strip() and "Finish / Color" not in item_specs:
+            item_specs["Finish / Color"] = self.entry_finish.get().strip()
+
         sku_val = self.entry_sku.get().strip() or self.current_item_id
         item = ProductItem(
             id=self.current_item_id,
@@ -955,6 +1222,7 @@ class NJFenceCatalogApp(ctk.CTk):
             description_es=self.txt_desc_es.get("1.0", "end").strip(),
             description_en=self.txt_desc_en.get("1.0", "end").strip(),
             features=features_list,
+            specifications=item_specs,
             pricing_mode=pricing_mode,
             price_per_linear_ft=price_lf,
             price_per_kit=price_kit,
@@ -980,7 +1248,7 @@ class NJFenceCatalogApp(ctk.CTk):
         self._refresh_catalog_list_ui()
         messagebox.showinfo(
             "Producto guardado",
-            f"El modelo '{item.name}' ({item.sku}) fue guardado en el catálogo con sus precios exactos.",
+            f"El modelo '{item.name}' ({item.sku}) fue guardado en el catálogo con sus especificaciones y precios exactos.",
         )
         self.on_clear_form()
 
@@ -1001,11 +1269,14 @@ class NJFenceCatalogApp(ctk.CTk):
 
         self.entry_finish.delete(0, "end")
         self.entry_finish.insert(0, "Any Color Powder coating")
-        self.entry_material.delete(0, "end")
-        self.entry_finish.delete(0, "end")
+
         self.txt_desc_es.delete("1.0", "end")
         self.txt_desc_en.delete("1.0", "end")
         self.txt_features.delete("1.0", "end")
+
+        # Clear specifications
+        self.set_specifications({})
+
         self.entry_price_lf.delete(0, "end")
         self.entry_price_kit.delete(0, "end")
         self.entry_kit_note.delete(0, "end")
@@ -1053,6 +1324,15 @@ class NJFenceCatalogApp(ctk.CTk):
                 text_color="#68D391",
             ).pack(anchor="w", pady=(2, 2))
 
+            if getattr(item, "specifications", None):
+                specs_summary = "  •  ".join(f"{k}: {v}" for k, v in list(item.specifications.items())[:3])
+                ctk.CTkLabel(
+                    info_col,
+                    text=f"📋 Specs ({len(item.specifications)}): {specs_summary}...",
+                    font=ctk.CTkFont(size=10.5),
+                    text_color="#A0AEC0",
+                ).pack(anchor="w", pady=(1, 2))
+
             desc_preview = (item.description_es or item.description_en)[:140]
             if desc_preview:
                 ctk.CTkLabel(
@@ -1062,14 +1342,26 @@ class NJFenceCatalogApp(ctk.CTk):
                     text_color="#CBD5E0",
                 ).pack(anchor="w")
 
+            action_box = ctk.CTkFrame(card, fg_color="transparent")
+            action_box.pack(side="right", padx=10, pady=10)
+
             ctk.CTkButton(
-                card,
+                action_box,
+                text="✏️ Editar",
+                fg_color="#2B6CB0",
+                hover_color="#2C5282",
+                width=85,
+                command=lambda it=item: self.load_product_into_editor(it),
+            ).pack(side="left", padx=(0, 6))
+
+            ctk.CTkButton(
+                action_box,
                 text="🗑️ Eliminar",
                 fg_color="#C53030",
                 hover_color="#9B2C2C",
-                width=95,
+                width=85,
                 command=lambda sku=item.sku: self.on_delete_item(sku),
-            ).pack(side="right", padx=10, pady=10)
+            ).pack(side="left")
 
     def on_delete_item(self, sku: str) -> None:
         self.catalog_items = [x for x in self.catalog_items if x.sku != sku]

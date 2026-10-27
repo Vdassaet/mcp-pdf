@@ -169,6 +169,24 @@ def generate_catalog_pdf(
         leading=11.5,
         textColor=TEXT_MUTED,
     )
+    spec_header_style = ParagraphStyle(
+        "SpecHeader",
+        parent=styles["Normal"],
+        fontName="Helvetica-Bold",
+        fontSize=8.5,
+        leading=11.5,
+        textColor=BRAND_NAVY,
+        spaceBefore=2,
+        spaceAfter=2,
+    )
+    spec_item_style = ParagraphStyle(
+        "SpecItem",
+        parent=styles["Normal"],
+        fontName="Helvetica",
+        fontSize=8.0,
+        leading=10.5,
+        textColor=TEXT_DARK,
+    )
     price_header_style = ParagraphStyle(
         "PriceHeader",
         parent=styles["Normal"],
@@ -267,12 +285,66 @@ def generate_catalog_pdf(
                 Paragraph(f"<b>Description:</b> {escape(item.description_es.strip())}", desc_style)
             )
 
-        if item.features:
-            feats_clean = [escape(f.strip()) for f in item.features if f.strip()][:4]
-            if feats_clean:
-                bullets_html = " &nbsp;|&nbsp; ".join([f"&bull; {f}" for f in feats_clean])
-                right_elements.append(Paragraph(f"<b>Specifications:</b> {bullets_html}", feature_style))
-                right_elements.append(Spacer(1, 5))
+        # Product Specifications Section
+        specs_to_render: List[tuple[str, str]] = []
+        if getattr(item, "specifications", None) and isinstance(item.specifications, dict):
+            for k, v in item.specifications.items():
+                k_clean = str(k).strip()
+                v_clean = str(v).strip()
+                if k_clean and v_clean:
+                    specs_to_render.append((k_clean, v_clean))
+
+        # Fallback to item.features if specifications dict is empty
+        if not specs_to_render and item.features:
+            for f in item.features:
+                f_clean = str(f).strip().lstrip("•- ")
+                if f_clean:
+                    if ":" in f_clean:
+                        parts = f_clean.split(":", 1)
+                        if parts[0].strip() and parts[1].strip():
+                            specs_to_render.append((parts[0].strip(), parts[1].strip()))
+                        else:
+                            specs_to_render.append(("", f_clean))
+                    else:
+                        specs_to_render.append(("", f_clean))
+
+        if specs_to_render:
+            right_elements.append(
+                Paragraph("<b>Product Specifications</b>", spec_header_style)
+            )
+            if len(specs_to_render) > 3:
+                half = (len(specs_to_render) + 1) // 2
+                spec_rows = []
+                for i in range(half):
+                    c1_k, c1_v = specs_to_render[i]
+                    c1_txt = f"&bull; <b>{escape(c1_k)}:</b> {escape(c1_v)}" if c1_k else f"&bull; {escape(c1_v)}"
+                    if i + half < len(specs_to_render):
+                        c2_k, c2_v = specs_to_render[i + half]
+                        c2_txt = f"&bull; <b>{escape(c2_k)}:</b> {escape(c2_v)}" if c2_k else f"&bull; {escape(c2_v)}"
+                    else:
+                        c2_txt = ""
+                    spec_rows.append([
+                        Paragraph(c1_txt, spec_item_style),
+                        Paragraph(c2_txt, spec_item_style),
+                    ])
+                st = Table(spec_rows, colWidths=[2.25 * inch, 2.25 * inch])
+                st.setStyle(
+                    TableStyle(
+                        [
+                            ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                            ("LEFTPADDING", (0, 0), (-1, -1), 0),
+                            ("RIGHTPADDING", (0, 0), (-1, -1), 4),
+                            ("TOPPADDING", (0, 0), (-1, -1), 1),
+                            ("BOTTOMPADDING", (0, 0), (-1, -1), 1),
+                        ]
+                    )
+                )
+                right_elements.append(st)
+            else:
+                for k, v in specs_to_render:
+                    txt = f"&bull; <b>{escape(k)}:</b> {escape(v)}" if k else f"&bull; {escape(v)}"
+                    right_elements.append(Paragraph(txt, spec_item_style))
+            right_elements.append(Spacer(1, 4))
 
         # Strict Pricing Box — NEVER invents numbers
         price_rows = []
