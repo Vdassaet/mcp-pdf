@@ -40,7 +40,7 @@ function bindEvents() {
   document.getElementById("btnSaveVaultKey").addEventListener("click", () => {
     const val = document.getElementById("inputVaultKey").value.trim();
     if (!val) {
-      alert("Pega tu GEMINI_API_KEY (empieza por AIzaSy...) antes de guardar.");
+      alert("Pega tu GEMINI_API_KEY en la casilla antes de guardar.");
       return;
     }
     localStorage.setItem(VAULT_KEY_NAME, val);
